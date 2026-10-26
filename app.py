@@ -2,14 +2,16 @@
 Universal-Web-MCP Minimal Studio.
 Inspired by Ashzo design system & Awwwards minimal luxury aesthetic.
 Features:
-- Ashzo Design System: Obsidian dark / Alabaster light, Iris & Volt accents, film grain, Ashzo logo mark.
+- Ashzo Design System: Obsidian dark / Alabaster light, Iris & Volt accents, film grain, animated Ashzo logo mark.
+- Custom Animated Glassmorphic Dropdowns: Model, Quality, Platform, and Routing Tier.
+- Silky Modal Transitions: Backdrop blur fade and spring-scale dialog entrance.
+- Smooth Light / Dark Theme Animations: Global transition with rotating sun/moon icon.
+- Micro-interactions: Tab animations, button hover/press states, live pulse indicators, and vault interactions.
 - Minimal text: Zero clutter, concise labels, micro-badges, clean punchy controls.
-- Seamless Light / Dark theme toggle (persisted in localStorage).
-- Live Google Flow Credits HUD (373 Credits [PRO]) directly in Flow card with instant refresh.
+- Live Google Flow Credits HUD: 373 Credits [PRO] directly in Flow card with instant refresh.
 - Generative Studio: Omni Flash (4s, 6s, 8s, 10s), Veo 3.1 (8s cap), Keyframe Interpolation, 1080p default.
 - Download Vault with inline file renaming.
 - Universal Account Manager (Google, GitHub, Twitter, Custom) with sessions.json persistence.
-- Autonomous Platform Learner & 3-Tier Hybrid Fast Path (<200ms).
 """
 
 import os
@@ -49,7 +51,7 @@ DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 web_app = FastAPI(
     title="Ashzo MCP Minimal Studio",
     description="Sub-second 3-Tier Hybrid Routing & Autonomous Creative Studio",
-    version="4.1.0"
+    version="4.2.0"
 )
 
 web_app.add_middleware(
@@ -104,9 +106,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     :root {
       --radius: 20px;
       --radius-sm: 12px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Film Grain Overlay inspired by Ashzo site */
+    /* Film Grain Overlay */
     body::after {
       content: '';
       position: fixed;
@@ -190,6 +193,161 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     html:not(.dark) .ashzo-text-muted { color: rgba(11, 11, 16, 0.65); }
     html:not(.dark) .ashzo-text-dim { color: rgba(11, 11, 16, 0.42); }
 
+    /* Theme Switch Animation */
+    html.theme-animating,
+    html.theme-animating body,
+    html.theme-animating .ashzo-mesh,
+    html.theme-animating .ashzo-glass,
+    html.theme-animating .ashzo-card-sub,
+    html.theme-animating .ashzo-input,
+    html.theme-animating .ashzo-border,
+    html.theme-animating button,
+    html.theme-animating input,
+    html.theme-animating textarea,
+    html.theme-animating pre {
+      transition: background-color 0.45s var(--ease),
+                  background 0.45s var(--ease),
+                  border-color 0.45s var(--ease),
+                  color 0.45s var(--ease),
+                  box-shadow 0.45s var(--ease) !important;
+    }
+
+    .theme-spin {
+      animation: themeRotate 0.55s var(--ease) forwards;
+    }
+    @keyframes themeRotate {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(0.65); opacity: 0.4; }
+      100% { transform: rotate(360deg) scale(1); opacity: 1; }
+    }
+
+    /* Tab Switch Animation */
+    @keyframes tabEnter {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .tab-animating {
+      animation: tabEnter 0.3s var(--ease) forwards;
+    }
+
+    /* Modal Animation */
+    .modal-overlay {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s var(--ease), visibility 0.3s var(--ease);
+    }
+    .modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .modal-dialog {
+      transform: scale(0.92) translateY(16px);
+      opacity: 0;
+      transition: transform 0.32s var(--ease), opacity 0.28s var(--ease);
+    }
+    .modal-overlay.is-open .modal-dialog {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    /* Custom Animated Dropdown */
+    .custom-dropdown {
+      position: relative;
+      user-select: none;
+    }
+    .dropdown-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s, transform 0.2s;
+    }
+    .dropdown-trigger:hover {
+      border-color: rgba(139, 108, 255, 0.4);
+    }
+    .dropdown-trigger .chevron {
+      transition: transform 0.3s var(--ease);
+    }
+    .custom-dropdown.is-open .dropdown-trigger .chevron {
+      transform: rotate(180deg);
+    }
+    .dropdown-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 6px);
+      width: 100%;
+      z-index: 60;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px) scale(0.97);
+      transition: opacity 0.22s var(--ease), transform 0.22s var(--ease), visibility 0.22s var(--ease);
+      transform-origin: top center;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    html.dark .dropdown-menu {
+      background: rgba(14, 16, 26, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+    }
+    html:not(.dark) .dropdown-menu {
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+    }
+    .custom-dropdown.is-open .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, transform 0.15s;
+    }
+    .dropdown-item:hover {
+      background-color: rgba(139, 108, 255, 0.14);
+      color: #8b6cff;
+      transform: translateX(2px);
+    }
+    .dropdown-item.is-selected {
+      color: #8b6cff;
+      font-weight: 600;
+    }
+    html:not(.dark) .dropdown-item.is-selected {
+      color: #7952f5;
+    }
+
+    /* Micro-interactions */
+    .dur-btn {
+      transition: all 0.22s var(--ease);
+    }
+    .dur-btn:hover {
+      transform: translateY(-1px);
+    }
+    .dur-btn:active {
+      transform: scale(0.96);
+    }
+    .vault-item {
+      transition: transform 0.22s var(--ease), border-color 0.22s, background-color 0.22s;
+    }
+    .vault-item:hover {
+      transform: translateY(-1.5px);
+    }
+
     /* Volt pulse dot */
     .volt-dot {
       background-color: #c8f560;
@@ -211,10 +369,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.22); border-radius: 999px; }
   </style>
 </head>
-<body class="ashzo-mesh min-h-screen flex flex-col font-sans transition-colors duration-300">
+<body class="ashzo-mesh min-h-screen flex flex-col font-sans">
 
   <!-- Ashzo Minimal Header -->
-  <header class="ashzo-border border-b backdrop-blur-xl sticky top-0 z-40 transition-colors duration-300">
+  <header class="ashzo-border border-b backdrop-blur-xl sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
       
       <!-- Brand with Authentic Ashzo Logo SVG -->
@@ -247,7 +405,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </svg>
         <span class="font-semibold text-sm tracking-tight flex items-center gap-1.5">
           Ashzo MCP
-          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v4.1</span>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v4.2</span>
         </span>
       </a>
 
@@ -255,18 +413,18 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="flex items-center gap-2.5">
         
         <!-- Active Session Pill -->
-        <div id="activeSessionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full ashzo-card-sub text-xs font-mono">
+        <div id="activeSessionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full ashzo-card-sub text-xs font-mono transition-transform hover:scale-[1.02]">
           <span class="w-1.5 h-1.5 rounded-full volt-dot"></span>
           <span id="activeAccountName" class="font-medium text-indigo-400 truncate max-w-[150px]">arq5020@gmail.com</span>
         </div>
 
-        <!-- Light / Dark Theme Switch -->
+        <!-- Animated Light / Dark Theme Switch Button -->
         <button onclick="toggleTheme()" id="themeToggleBtn" class="w-8 h-8 rounded-full ashzo-card-sub flex items-center justify-center ashzo-text-muted hover:text-indigo-400 transition" title="Toggle Theme">
           <i class="fa-solid fa-moon text-xs"></i>
         </button>
 
         <!-- Connect Account Button -->
-        <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5">
+        <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5">
           <i class="fa-solid fa-plus text-[10px]"></i>
           <span>Connect</span>
         </button>
@@ -301,7 +459,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <main class="max-w-6xl w-full mx-auto px-5 py-5 flex-1">
 
     <!-- TAB 1: GOOGLE FLOW STUDIO -->
-    <div id="tab-flow" class="tab-content">
+    <div id="tab-flow" class="tab-content tab-animating">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
         <!-- Controls (Left 7 Cols) -->
@@ -323,30 +481,67 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                   <span id="creditsValue" class="font-bold text-emerald-400">373 Credits</span>
                   <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-indigo-500/10 text-indigo-400 font-semibold">PRO</span>
                 </div>
-                <button onclick="refreshLiveCredits()" id="refreshCreditsBtn" class="w-7 h-7 rounded-full ashzo-card-sub border ashzo-border ashzo-text-dim hover:text-emerald-400 transition flex items-center justify-center text-[10px]" title="Refresh Balance">
+                <button onclick="refreshLiveCredits()" id="refreshCreditsBtn" class="w-7 h-7 rounded-full ashzo-card-sub border ashzo-border ashzo-text-dim hover:text-emerald-400 active:scale-95 transition flex items-center justify-center text-[10px]" title="Refresh Balance">
                   <i class="fa-solid fa-rotate"></i>
                 </button>
               </div>
             </div>
 
-            <!-- Model & Quality -->
+            <!-- Custom Animated Dropdowns: Model & Quality -->
             <div class="grid grid-cols-2 gap-3">
+              
+              <!-- Model Dropdown -->
               <div>
                 <label class="text-[10px] font-mono uppercase tracking-wider ashzo-text-dim font-medium">Model</label>
-                <select id="modelSelect" onchange="onModelChange()" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
-                  <option value="omni_flash" selected>Gemini Omni Flash</option>
-                  <option value="veo_3_1">Google Veo 3.1</option>
-                  <option value="gemini_omni">Gemini Omni</option>
-                </select>
+                <div class="custom-dropdown mt-1" id="dropdown-model">
+                  <div class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" onclick="toggleDropdown('dropdown-model')">
+                    <span id="modelDisplay">Gemini Omni Flash</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+                  </div>
+                  <div class="dropdown-menu ashzo-glass rounded-xl p-1.5 shadow-2xl border ashzo-border">
+                    <div class="dropdown-item is-selected" data-value="omni_flash" onclick="selectModel('omni_flash', 'Gemini Omni Flash')">
+                      <span>Gemini Omni Flash</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">4s-10s</span>
+                    </div>
+                    <div class="dropdown-item" data-value="veo_3_1" onclick="selectModel('veo_3_1', 'Google Veo 3.1')">
+                      <span>Google Veo 3.1</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">8s Max</span>
+                    </div>
+                    <div class="dropdown-item" data-value="gemini_omni" onclick="selectModel('gemini_omni', 'Gemini Omni')">
+                      <span>Gemini Omni</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">Standard</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="modelSelect" value="omni_flash">
+                </div>
               </div>
+
+              <!-- Quality Dropdown -->
               <div>
                 <label class="text-[10px] font-mono uppercase tracking-wider ashzo-text-dim font-medium">Quality</label>
-                <select id="qualitySelect" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
-                  <option value="1080p" selected>1080p Upscaled</option>
-                  <option value="720p">720p Native</option>
-                  <option value="4k">4K Ultra HD</option>
-                </select>
+                <div class="custom-dropdown mt-1" id="dropdown-quality">
+                  <div class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" onclick="toggleDropdown('dropdown-quality')">
+                    <span id="qualityDisplay">1080p Upscaled</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+                  </div>
+                  <div class="dropdown-menu ashzo-glass rounded-xl p-1.5 shadow-2xl border ashzo-border">
+                    <div class="dropdown-item is-selected" data-value="1080p" onclick="selectQuality('1080p', '1080p Upscaled')">
+                      <span>1080p Upscaled</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">FHD</span>
+                    </div>
+                    <div class="dropdown-item" data-value="720p" onclick="selectQuality('720p', '720p Native')">
+                      <span>720p Native</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">Fast</span>
+                    </div>
+                    <div class="dropdown-item" data-value="4k" onclick="selectQuality('4k', '4K Ultra HD')">
+                      <span>4K Ultra HD</span>
+                      <span class="text-[9px] font-mono ashzo-text-dim">Ultra</span>
+                    </div>
+                  </div>
+                  <input type="hidden" id="qualitySelect" value="1080p">
+                </div>
               </div>
+
             </div>
 
             <!-- Duration Pills -->
@@ -355,7 +550,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               <div id="durationPills" class="flex flex-wrap gap-1.5 mt-1.5">
                 <button type="button" onclick="setDuration('4')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">4s</button>
                 <button type="button" onclick="setDuration('6')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">6s</button>
-                <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold">8s</button>
+                <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold shadow-[0_0_12px_rgba(139,108,255,0.25)]">8s</button>
                 <button type="button" onclick="setDuration('10')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">10s</button>
                 <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">30s (4 Scenes)</button>
               </div>
@@ -363,9 +558,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             </div>
 
             <!-- Keyframes Accordion -->
-            <details class="ashzo-card-sub rounded-xl p-2.5 text-xs">
-              <summary class="cursor-pointer font-mono text-[10px] ashzo-text-dim select-none hover:text-indigo-400">
-                <i class="fa-solid fa-arrows-left-right mr-1"></i> Keyframe Interpolation (Start &amp; End Frame)
+            <details class="ashzo-card-sub rounded-xl p-2.5 text-xs group transition-all duration-300">
+              <summary class="cursor-pointer font-mono text-[10px] ashzo-text-dim select-none hover:text-indigo-400 flex items-center justify-between">
+                <span><i class="fa-solid fa-arrows-left-right mr-1"></i> Keyframe Interpolation</span>
+                <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-300 group-open:rotate-180"></i>
               </summary>
               <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t ashzo-border">
                 <div>
@@ -384,9 +580,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-[10px] font-mono uppercase tracking-wider ashzo-text-dim font-medium">Prompt</label>
                 <div class="flex gap-1">
-                  <button type="button" onclick="appendTag('Cinematic 35mm lens, 4K')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400">+ 35mm</button>
-                  <button type="button" onclick="appendTag('FPV drone push-in, volumetric lighting')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400">+ FPV</button>
-                  <button type="button" onclick="appendTag('Smooth dolly out, golden hour')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400">+ Dolly</button>
+                  <button type="button" onclick="appendTag('Cinematic 35mm lens, 4K')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400 active:scale-95 transition">+ 35mm</button>
+                  <button type="button" onclick="appendTag('FPV drone push-in, volumetric lighting')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400 active:scale-95 transition">+ FPV</button>
+                  <button type="button" onclick="appendTag('Smooth dolly out, golden hour')" class="text-[9px] font-mono px-1.5 py-0.5 rounded ashzo-card-sub ashzo-text-dim hover:text-indigo-400 active:scale-95 transition">+ Dolly</button>
                 </div>
               </div>
               <textarea id="promptInput" rows="3" class="w-full ashzo-input rounded-xl p-3 text-xs font-mono placeholder:text-slate-500" placeholder="Describe the scene...">Futuristic developer terminal displaying neon cyan data streams at sub-second speed. Smooth 35mm camera motion, volumetric reflections, 4K resolution.</textarea>
@@ -395,7 +591,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             <!-- Slug & Generate Button -->
             <div class="flex items-center gap-2.5 pt-1">
               <input id="slugInput" type="text" value="universal_web_launch" placeholder="Video name slug" class="flex-1 ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
-              <button id="genBtn" onclick="submitGeneration()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 whitespace-nowrap">
+              <button id="genBtn" onclick="submitGeneration()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-play text-[9px]"></i>
                 <span>Generate Video</span>
               </button>
@@ -409,7 +605,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <div class="ashzo-glass rounded-2xl p-5 flex flex-col h-full min-h-[420px]">
             <div class="flex items-center justify-between border-b ashzo-border pb-3 mb-3">
               <span class="text-xs font-mono uppercase tracking-wider font-semibold">Vault</span>
-              <button onclick="loadDownloads()" class="ashzo-text-dim hover:text-indigo-400 transition text-xs" title="Reload Vault">
+              <button onclick="loadDownloads()" class="ashzo-text-dim hover:text-indigo-400 active:scale-95 transition text-xs" title="Reload Vault">
                 <i class="fa-solid fa-rotate"></i>
               </button>
             </div>
@@ -427,7 +623,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="ashzo-glass rounded-2xl p-5 space-y-4">
         <div class="flex items-center justify-between border-b ashzo-border pb-3">
           <h2 class="text-xs font-mono uppercase tracking-wider font-semibold">Saved Accounts</h2>
-          <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5">
+          <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5">
             <i class="fa-solid fa-plus text-[9px]"></i>
             <span>Add Account</span>
           </button>
@@ -446,7 +642,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </div>
         <div class="flex gap-2">
           <input id="learnerUrl" type="url" value="https://flow.google.com/" placeholder="Enter website URL..." class="flex-1 ashzo-input rounded-xl px-3.5 py-2 text-xs font-mono">
-          <button id="learnerBtn" onclick="runLearner()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-xl transition whitespace-nowrap">
+          <button id="learnerBtn" onclick="runLearner()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-xl transition whitespace-nowrap">
             <span>Explore</span>
           </button>
         </div>
@@ -469,14 +665,33 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="border-b ashzo-border pb-3">
           <h2 class="text-xs font-mono uppercase tracking-wider font-semibold">3-Tier Hybrid Fast Path</h2>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
           <input id="runnerUrl" type="url" value="https://jsonplaceholder.typicode.com/todos/1" class="flex-1 ashzo-input rounded-xl px-3.5 py-2 text-xs font-mono">
-          <select id="runnerTier" class="ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
-            <option value="1">Tier 1: Fast Path (&lt;200ms)</option>
-            <option value="2">Tier 2: CDP Sniffer</option>
-            <option value="3">Tier 3: DOM Fallback</option>
-          </select>
-          <button onclick="runRequest()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-xl transition">Run</button>
+          
+          <!-- Custom Tier Dropdown -->
+          <div class="custom-dropdown w-56" id="dropdown-tier">
+            <div class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" onclick="toggleDropdown('dropdown-tier')">
+              <span id="tierDisplay">Tier 1: Fast Path</span>
+              <i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+            </div>
+            <div class="dropdown-menu ashzo-glass rounded-xl p-1.5 shadow-2xl border ashzo-border">
+              <div class="dropdown-item is-selected" data-value="1" onclick="selectTier(1, 'Tier 1: Fast Path')">
+                <span>Tier 1: Fast Path</span>
+                <span class="text-[9px] font-mono text-emerald-400">&lt;200ms</span>
+              </div>
+              <div class="dropdown-item" data-value="2" onclick="selectTier(2, 'Tier 2: CDP Sniffer')">
+                <span>Tier 2: CDP Sniffer</span>
+                <span class="text-[9px] font-mono text-indigo-400">Sniff</span>
+              </div>
+              <div class="dropdown-item" data-value="3" onclick="selectTier(3, 'Tier 3: DOM Fallback')">
+                <span>Tier 3: DOM Fallback</span>
+                <span class="text-[9px] font-mono text-amber-400">Tokens</span>
+              </div>
+            </div>
+            <input type="hidden" id="runnerTier" value="1">
+          </div>
+
+          <button onclick="runRequest()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-2 rounded-xl transition">Run</button>
         </div>
         <pre id="runnerOutput" class="p-3 rounded-xl ashzo-card-sub text-xs font-mono ashzo-text-muted max-h-64 overflow-auto custom-scrollbar"><code>Output will appear here.</code></pre>
       </div>
@@ -484,37 +699,59 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
   </main>
 
-  <!-- Inline Rename Modal -->
-  <div id="renameModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="ashzo-glass rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl">
+  <!-- Inline Rename Modal with Spring Animation -->
+  <div id="renameModal" class="modal-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-sm w-full p-5 space-y-3 shadow-2xl">
       <h3 class="text-xs font-semibold uppercase tracking-wider font-mono">Rename File</h3>
       <input id="newFilenameInput" type="text" class="w-full ashzo-input rounded-lg px-3 py-2 text-xs font-mono">
       <input id="oldFilepathInput" type="hidden">
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeRenameModal()" class="text-xs ashzo-text-dim px-3 py-1.5 rounded-lg">Cancel</button>
-        <button onclick="saveRename()" class="bg-indigo-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium">Save</button>
+        <button onclick="closeRenameModal()" class="text-xs ashzo-text-dim px-3 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button onclick="saveRename()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Universal Connect Account Modal -->
-  <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="ashzo-glass rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+  <!-- Universal Connect Account Modal with Spring Animation & Custom Dropdown -->
+  <div id="loginModal" class="modal-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4" onclick="handleModalBackdropClick(event, 'loginModal')">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b ashzo-border pb-2.5">
         <h3 class="text-xs font-semibold uppercase tracking-wider font-mono">Connect Account</h3>
-        <button onclick="closeLoginModal()" class="ashzo-text-dim hover:text-indigo-400"><i class="fa-solid fa-xmark text-xs"></i></button>
+        <button onclick="closeLoginModal()" class="ashzo-text-dim hover:text-indigo-400 p-1"><i class="fa-solid fa-xmark text-xs"></i></button>
       </div>
 
       <div class="space-y-3 text-xs">
         <div>
           <label class="text-[9px] font-mono uppercase tracking-wider ashzo-text-dim font-medium">Platform</label>
-          <select id="loginPlatformSelect" onchange="onPlatformPresetChange()" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
-            <option value="https://accounts.google.com/">Google (accounts.google.com)</option>
-            <option value="https://github.com/login">GitHub (github.com)</option>
-            <option value="https://twitter.com/i/flow/login">Twitter / X</option>
-            <option value="https://flow.google.com/">Google Flow (flow.google.com)</option>
-            <option value="custom">Custom URL</option>
-          </select>
+          <div class="custom-dropdown mt-1" id="dropdown-platform">
+            <div class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" onclick="toggleDropdown('dropdown-platform')">
+              <span id="platformDisplay"><i class="fa-brands fa-google mr-1.5 text-indigo-400"></i> Google</span>
+              <i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+            </div>
+            <div class="dropdown-menu ashzo-glass rounded-xl p-1.5 shadow-2xl border ashzo-border">
+              <div class="dropdown-item is-selected" data-value="https://accounts.google.com/" onclick="selectPlatform('https://accounts.google.com/', 'Google', 'fa-brands fa-google text-indigo-400')">
+                <span><i class="fa-brands fa-google mr-1.5 text-indigo-400"></i> Google</span>
+                <span class="text-[9px] font-mono ashzo-text-dim">accounts.google.com</span>
+              </div>
+              <div class="dropdown-item" data-value="https://github.com/login" onclick="selectPlatform('https://github.com/login', 'GitHub', 'fa-brands fa-github')">
+                <span><i class="fa-brands fa-github mr-1.5"></i> GitHub</span>
+                <span class="text-[9px] font-mono ashzo-text-dim">github.com</span>
+              </div>
+              <div class="dropdown-item" data-value="https://twitter.com/i/flow/login" onclick="selectPlatform('https://twitter.com/i/flow/login', 'Twitter / X', 'fa-brands fa-x-twitter')">
+                <span><i class="fa-brands fa-x-twitter mr-1.5"></i> Twitter / X</span>
+                <span class="text-[9px] font-mono ashzo-text-dim">x.com</span>
+              </div>
+              <div class="dropdown-item" data-value="https://flow.google.com/" onclick="selectPlatform('https://flow.google.com/', 'Google Flow', 'fa-solid fa-video text-emerald-400')">
+                <span><i class="fa-solid fa-video mr-1.5 text-emerald-400"></i> Google Flow</span>
+                <span class="text-[9px] font-mono ashzo-text-dim">flow.google.com</span>
+              </div>
+              <div class="dropdown-item" data-value="custom" onclick="selectPlatform('custom', 'Custom URL', 'fa-solid fa-globe text-sky-400')">
+                <span><i class="fa-solid fa-globe mr-1.5 text-sky-400"></i> Custom URL</span>
+                <span class="text-[9px] font-mono ashzo-text-dim">Any platform</span>
+              </div>
+            </div>
+            <input type="hidden" id="loginPlatformSelect" value="https://accounts.google.com/">
+          </div>
         </div>
 
         <div id="customUrlDiv" class="hidden">
@@ -534,8 +771,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       </div>
 
       <div class="flex justify-end gap-2 pt-2 border-t ashzo-border">
-        <button onclick="closeLoginModal()" class="text-xs ashzo-text-dim px-3.5 py-1.5 rounded-lg">Cancel</button>
-        <button id="launchLoginBtn" onclick="executeInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-1.5 rounded-xl transition">
+        <button onclick="closeLoginModal()" class="text-xs ashzo-text-dim px-3.5 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button id="launchLoginBtn" onclick="executeInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-1.5 rounded-xl transition">
           Launch Chrome
         </button>
       </div>
@@ -543,7 +780,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   </div>
 
   <script>
-    // Light / Dark Theme Management
+    // -------------------------------------------------------------
+    // Theme Management with Smooth Transition & Icon Spin
+    // -------------------------------------------------------------
     function initTheme() {
       const saved = localStorage.getItem('ashzo_theme') || 'dark';
       if (saved === 'dark') {
@@ -557,20 +796,165 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
     function toggleTheme() {
       const isDark = document.documentElement.classList.contains('dark');
+      const btn = document.getElementById('themeToggleBtn');
+      
+      // Global smooth color interpolation
+      document.documentElement.classList.add('theme-animating');
+      btn.classList.add('theme-spin');
+      setTimeout(() => btn.classList.remove('theme-spin'), 550);
+
       if (isDark) {
         document.documentElement.classList.remove('dark');
         localStorage.setItem('ashzo_theme', 'light');
-        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-moon text-xs"></i>';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fa-solid fa-moon text-xs"></i>';
+        }, 180);
       } else {
         document.documentElement.classList.add('dark');
         localStorage.setItem('ashzo_theme', 'dark');
-        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-sun text-xs"></i>';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fa-solid fa-sun text-xs"></i>';
+        }, 180);
+      }
+
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-animating');
+      }, 480);
+    }
+
+    // -------------------------------------------------------------
+    // Custom Dropdown Controller
+    // -------------------------------------------------------------
+    function toggleDropdown(dropdownId) {
+      const el = document.getElementById(dropdownId);
+      const wasOpen = el.classList.contains('is-open');
+      // Close other dropdowns
+      document.querySelectorAll('.custom-dropdown').forEach(d => {
+        if (d !== el) d.classList.remove('is-open');
+      });
+      if (wasOpen) {
+        el.classList.remove('is-open');
+      } else {
+        el.classList.add('is-open');
       }
     }
 
-    // Tabs
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.custom-dropdown')) {
+        document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('is-open'));
+      }
+    });
+
+    // Model selection
+    function selectModel(val, label) {
+      document.getElementById('modelSelect').value = val;
+      document.getElementById('modelDisplay').innerText = label;
+      document.getElementById('dropdown-model').classList.remove('is-open');
+      document.querySelectorAll('#dropdown-model .dropdown-item').forEach(item => {
+        item.classList.toggle('is-selected', item.dataset.value === val);
+      });
+      onModelChange();
+    }
+
+    // Quality selection
+    function selectQuality(val, label) {
+      document.getElementById('qualitySelect').value = val;
+      document.getElementById('qualityDisplay').innerText = label;
+      document.getElementById('dropdown-quality').classList.remove('is-open');
+      document.querySelectorAll('#dropdown-quality .dropdown-item').forEach(item => {
+        item.classList.toggle('is-selected', item.dataset.value === val);
+      });
+    }
+
+    // Platform selection in Modal
+    function selectPlatform(val, label, iconClass) {
+      document.getElementById('loginPlatformSelect').value = val;
+      document.getElementById('platformDisplay').innerHTML = `<i class="${iconClass} mr-1.5"></i> <span>${label}</span>`;
+      document.getElementById('dropdown-platform').classList.remove('is-open');
+      document.querySelectorAll('#dropdown-platform .dropdown-item').forEach(item => {
+        item.classList.toggle('is-selected', item.dataset.value === val);
+      });
+      onPlatformPresetChange();
+    }
+
+    // Tier selection in Runner
+    function selectTier(val, label) {
+      document.getElementById('runnerTier').value = val;
+      document.getElementById('tierDisplay').innerText = label;
+      document.getElementById('dropdown-tier').classList.remove('is-open');
+      document.querySelectorAll('#dropdown-tier .dropdown-item').forEach(item => {
+        item.classList.toggle('is-selected', item.dataset.value === String(val));
+      });
+    }
+
+    // -------------------------------------------------------------
+    // Animated Modal Controller (Spring scale & blur fade)
+    // -------------------------------------------------------------
+    function openModalWithAnimation(modalId) {
+      const m = document.getElementById(modalId);
+      m.classList.add('is-open');
+    }
+
+    function closeModalWithAnimation(modalId) {
+      const m = document.getElementById(modalId);
+      m.classList.remove('is-open');
+    }
+
+    function handleModalBackdropClick(event, modalId) {
+      if (event.target === document.getElementById(modalId)) {
+        closeModalWithAnimation(modalId);
+      }
+    }
+
+    function openLoginModal(presetEmail, presetUrl) {
+      if (presetEmail) document.getElementById('loginEmailInput').value = presetEmail;
+      if (presetUrl) {
+        if (presetUrl.includes('google.com')) selectPlatform('https://accounts.google.com/', 'Google', 'fa-brands fa-google text-indigo-400');
+        else if (presetUrl.includes('github.com')) selectPlatform('https://github.com/login', 'GitHub', 'fa-brands fa-github');
+        else if (presetUrl.includes('twitter.com') || presetUrl.includes('x.com')) selectPlatform('https://twitter.com/i/flow/login', 'Twitter / X', 'fa-brands fa-x-twitter');
+        else if (presetUrl.includes('flow.google')) selectPlatform('https://flow.google.com/', 'Google Flow', 'fa-solid fa-video text-emerald-400');
+        else {
+          selectPlatform('custom', 'Custom URL', 'fa-solid fa-globe text-sky-400');
+          document.getElementById('loginCustomUrl').value = presetUrl;
+        }
+      }
+      document.getElementById('loginStatusIndicator').classList.add('hidden');
+      document.getElementById('launchLoginBtn').disabled = false;
+      openModalWithAnimation('loginModal');
+    }
+
+    function closeLoginModal() {
+      closeModalWithAnimation('loginModal');
+    }
+
+    function openRename(path, name) {
+      document.getElementById('oldFilepathInput').value = path;
+      document.getElementById('newFilenameInput').value = name;
+      openModalWithAnimation('renameModal');
+    }
+
+    function closeRenameModal() {
+      closeModalWithAnimation('renameModal');
+    }
+
+    function onPlatformPresetChange() {
+      const val = document.getElementById('loginPlatformSelect').value;
+      if (val === 'custom') {
+        document.getElementById('customUrlDiv').classList.remove('hidden');
+      } else {
+        document.getElementById('customUrlDiv').classList.add('hidden');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Animated Tabs
+    // -------------------------------------------------------------
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.add('hidden');
+        el.classList.remove('tab-animating');
+      });
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('border-indigo-500', 'text-indigo-400');
         btn.classList.add('border-transparent', 'ashzo-text-dim');
@@ -578,7 +962,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
       const target = document.getElementById('tab-' + tabId);
       const btn = document.getElementById('tab-btn-' + tabId);
-      if (target) target.classList.remove('hidden');
+      if (target) {
+        target.classList.remove('hidden');
+        void target.offsetWidth; // force reflow for smooth animation trigger
+        target.classList.add('tab-animating');
+      }
       if (btn) {
         btn.classList.remove('border-transparent', 'ashzo-text-dim');
         btn.classList.add('border-indigo-500', 'text-indigo-400');
@@ -591,13 +979,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
-    // Model & Durations
+    // Model Change & Duration Pills
     function onModelChange() {
       const m = document.getElementById('modelSelect').value;
       const pills = document.getElementById('durationPills');
       if (m.includes('veo')) {
         pills.innerHTML = `
-          <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold">8s (Veo Max)</button>
+          <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold shadow-[0_0_12px_rgba(139,108,255,0.25)]">8s (Veo Max)</button>
           <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">30s (4 Scenes)</button>
         `;
         setDuration('8');
@@ -605,7 +993,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         pills.innerHTML = `
           <button type="button" onclick="setDuration('4')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">4s</button>
           <button type="button" onclick="setDuration('6')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">6s</button>
-          <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold">8s</button>
+          <button type="button" onclick="setDuration('8')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold shadow-[0_0_12px_rgba(139,108,255,0.25)]">8s</button>
           <button type="button" onclick="setDuration('10')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">10s</button>
           <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted">30s (4 Scenes)</button>
         `;
@@ -619,7 +1007,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         b.className = 'dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border ashzo-card-sub ashzo-border ashzo-text-muted';
       });
       if (event && event.target) {
-        event.target.className = 'dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold';
+        event.target.className = 'dur-btn px-2.5 py-1 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-400 font-semibold shadow-[0_0_12px_rgba(139,108,255,0.25)]';
       }
     }
 
@@ -629,7 +1017,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       area.focus();
     }
 
-    // Sessions
+    // -------------------------------------------------------------
+    // Sessions Management
+    // -------------------------------------------------------------
     async function loadSessions() {
       try {
         const res = await fetch('/api/sessions');
@@ -645,7 +1035,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           const hasCookies = (s.cookie_count || 0) > 0;
 
           const card = document.createElement('div');
-          card.className = `p-3.5 rounded-xl border transition ${s.is_active ? 'border-indigo-500/60 bg-indigo-500/5' : 'ashzo-card-sub ashzo-border'}`;
+          card.className = `p-3.5 rounded-xl border transition-all duration-200 hover:scale-[1.01] ${s.is_active ? 'border-indigo-500/60 bg-indigo-500/5' : 'ashzo-card-sub ashzo-border'}`;
           card.innerHTML = `
             <div class="flex items-start justify-between">
               <div>
@@ -661,9 +1051,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               </span>
 
               <div class="flex items-center gap-1.5">
-                ${!hasCookies ? `<button onclick="openLoginModal('${s.email}', '${s.domain ? 'https://' + s.domain : ''}')" class="text-[9px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded hover:bg-amber-500/20">Log In</button>` : ''}
-                ${!s.is_active && hasCookies ? `<button onclick="selectSession('${s.id}')" class="text-[9px] font-mono bg-indigo-600/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded hover:bg-indigo-600/20">Set Active</button>` : ''}
-                <button onclick="removeSession('${s.id}')" class="text-[10px] ashzo-text-dim hover:text-rose-400 p-1"><i class="fa-regular fa-trash-can"></i></button>
+                ${!hasCookies ? `<button onclick="openLoginModal('${s.email}', '${s.domain ? 'https://' + s.domain : ''}')" class="text-[9px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded hover:bg-amber-500/20 active:scale-95 transition">Log In</button>` : ''}
+                ${!s.is_active && hasCookies ? `<button onclick="selectSession('${s.id}')" class="text-[9px] font-mono bg-indigo-600/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded hover:bg-indigo-600/20 active:scale-95 transition">Set Active</button>` : ''}
+                <button onclick="removeSession('${s.id}')" class="text-[10px] ashzo-text-dim hover:text-rose-400 p-1 active:scale-95 transition"><i class="fa-regular fa-trash-can"></i></button>
               </div>
             </div>
           `;
@@ -685,42 +1075,6 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       if (!confirm('Remove this session?')) return;
       await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
       loadSessions();
-    }
-
-    function openLoginModal(presetEmail, presetUrl) {
-      if (presetEmail) document.getElementById('loginEmailInput').value = presetEmail;
-      if (presetUrl) {
-        const select = document.getElementById('loginPlatformSelect');
-        let matched = false;
-        for (let i = 0; i < select.options.length; i++) {
-          if (presetUrl.includes(select.options[i].value) || select.options[i].value.includes(presetUrl)) {
-            select.selectedIndex = i;
-            matched = true;
-            break;
-          }
-        }
-        if (!matched) {
-          select.value = 'custom';
-          document.getElementById('customUrlDiv').classList.remove('hidden');
-          document.getElementById('loginCustomUrl').value = presetUrl;
-        }
-      }
-      document.getElementById('loginStatusIndicator').classList.add('hidden');
-      document.getElementById('launchLoginBtn').disabled = false;
-      document.getElementById('loginModal').classList.remove('hidden');
-    }
-
-    function closeLoginModal() {
-      document.getElementById('loginModal').classList.add('hidden');
-    }
-
-    function onPlatformPresetChange() {
-      const val = document.getElementById('loginPlatformSelect').value;
-      if (val === 'custom') {
-        document.getElementById('customUrlDiv').classList.remove('hidden');
-      } else {
-        document.getElementById('customUrlDiv').classList.add('hidden');
-      }
     }
 
     async function executeInteractiveLogin() {
@@ -748,7 +1102,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    // -------------------------------------------------------------
     // Video Generation
+    // -------------------------------------------------------------
     async function submitGeneration() {
       const prompt = document.getElementById('promptInput').value.trim();
       const model = document.getElementById('modelSelect').value;
@@ -789,11 +1145,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    // -------------------------------------------------------------
     // Live Flow Credits
+    // -------------------------------------------------------------
     async function fetchFlowCredits(forceRefresh = false) {
       try {
         const btn = document.getElementById('refreshCreditsBtn');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+        if (btn) btn.classList.add('animate-spin');
         const res = await fetch('/api/flow/credits' + (forceRefresh ? '?refresh=true' : ''));
         const data = await res.json();
         const credits = data.live_credits !== undefined ? data.live_credits : 373;
@@ -802,7 +1160,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         console.error('Error fetching live credits:', e);
       } finally {
         const btn = document.getElementById('refreshCreditsBtn');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+        if (btn) btn.classList.remove('animate-spin');
       }
     }
 
@@ -810,7 +1168,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       fetchFlowCredits(true);
     }
 
+    // -------------------------------------------------------------
     // Download Vault & Inline Rename
+    // -------------------------------------------------------------
     async function loadDownloads() {
       try {
         const res = await fetch('/api/flow/downloads');
@@ -825,16 +1185,16 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         files.forEach(f => {
           const item = document.createElement('div');
-          item.className = 'p-2.5 rounded-xl ashzo-card-sub border ashzo-border flex items-center justify-between';
+          item.className = 'vault-item p-2.5 rounded-xl ashzo-card-sub border ashzo-border flex items-center justify-between';
           item.innerHTML = `
             <div class="truncate max-w-[210px]">
               <p class="text-xs font-mono font-medium truncate" title="${f.name}">${f.name}</p>
               <p class="text-[9px] font-mono ashzo-text-dim mt-0.5">${f.size_mb} MB &bull; ${f.modified}</p>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="openRename('${f.path}', '${f.name}')" class="p-1 rounded ashzo-text-dim hover:text-indigo-400 transition" title="Rename"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <a href="/downloads/${f.name}" target="_blank" class="p-1 rounded ashzo-text-dim hover:text-indigo-400 transition" title="Play"><i class="fa-solid fa-play text-[10px]"></i></a>
-              <a href="/downloads/${f.name}" download class="p-1 rounded text-indigo-400 hover:text-indigo-300 transition" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a>
+              <button onclick="openRename('${f.path}', '${f.name}')" class="p-1 rounded ashzo-text-dim hover:text-indigo-400 active:scale-95 transition" title="Rename"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <a href="/downloads/${f.name}" target="_blank" class="p-1 rounded ashzo-text-dim hover:text-indigo-400 active:scale-95 transition" title="Play"><i class="fa-solid fa-play text-[10px]"></i></a>
+              <a href="/downloads/${f.name}" download class="p-1 rounded text-indigo-400 hover:text-indigo-300 active:scale-95 transition" title="Download"><i class="fa-solid fa-download text-[10px]"></i></a>
             </div>
           `;
           container.appendChild(item);
@@ -842,16 +1202,6 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       } catch (e) {
         console.error(e);
       }
-    }
-
-    function openRename(path, name) {
-      document.getElementById('oldFilepathInput').value = path;
-      document.getElementById('newFilenameInput').value = name;
-      document.getElementById('renameModal').classList.remove('hidden');
-    }
-
-    function closeRenameModal() {
-      document.getElementById('renameModal').classList.add('hidden');
     }
 
     async function saveRename() {
@@ -872,7 +1222,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    // -------------------------------------------------------------
     // Platform Explorer
+    // -------------------------------------------------------------
     async function runLearner() {
       const url = document.getElementById('learnerUrl').value.trim();
       if (!url) return;
@@ -900,7 +1252,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    // -------------------------------------------------------------
     // 3-Tier Runner
+    // -------------------------------------------------------------
     async function runRequest() {
       const url = document.getElementById('runnerUrl').value;
       const tier = parseInt(document.getElementById('runnerTier').value);

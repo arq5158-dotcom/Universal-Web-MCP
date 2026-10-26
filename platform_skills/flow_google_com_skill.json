@@ -1,0 +1,44 @@
+{
+  "domain": "flow.google.com",
+  "url": "https://flow.google.com/",
+  "title": "Google Flow - AI Creative Studio for Video, Images & Custom Tools",
+  "learned_at": "2026-10-26 16:18:17",
+  "navigation_routes": [
+    {
+      "text": "Skip to main content",
+      "href": "https://flow.google.com/#main-content"
+    },
+    {
+      "text": "Google Flow",
+      "href": "https://flow.google.com/"
+    }
+  ],
+  "interactive_inputs": [],
+  "controls_and_buttons": [
+    "help",
+    "more_vert",
+    "RSVP Here",
+    "close",
+    "edit",
+    "delete",
+    "add New project"
+  ],
+  "intercepted_apis": [
+    {
+      "url": "https://www.gstatic.com/glue/cookienotificationbar/config/2a.json",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": "boolean"
+          }
+        }
+      },
+      "sample": {
+        "required": false
+      }
+    }
+  ]
+}

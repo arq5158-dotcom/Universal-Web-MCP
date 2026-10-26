@@ -1,0 +1,1169 @@
+{
+  "domain": "github.com",
+  "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP",
+  "title": "GitHub - arq5158-dotcom/Universal-Web-MCP: Production-ready Python MCP Server using 3-Tier Hybrid Routing (Fast Path, CDP Sniffer, DOM Fallback) \u00b7 GitHub",
+  "learned_at": "2026-10-26 16:18:47",
+  "navigation_routes": [
+    {
+      "text": "Skip to content",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP#start-of-content"
+    },
+    {
+      "text": "Sign in",
+      "href": "https://github.com/login?return_to=https%3A%2F%2Fgithub.com%2Farq5158-dotcom%2FUniversal-Web-MCP"
+    },
+    {
+      "text": "Pricing",
+      "href": "https://github.com/pricing"
+    },
+    {
+      "text": "Sign up",
+      "href": "https://github.com/signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=arq5158-dotcom%2FUniversal-Web-MCP"
+    },
+    {
+      "text": "Reload",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP"
+    },
+    {
+      "text": "arq5158-dotcom",
+      "href": "https://github.com/arq5158-dotcom"
+    },
+    {
+      "text": "Issues",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/issues"
+    },
+    {
+      "text": "Pull requests",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/pulls"
+    },
+    {
+      "text": "Actions",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/actions"
+    },
+    {
+      "text": "Projects",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/projects"
+    },
+    {
+      "text": "Security and quality",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/security"
+    },
+    {
+      "text": "Insights",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/pulse"
+    },
+    {
+      "text": "Notifications",
+      "href": "https://github.com/login?return_to=%2Farq5158-dotcom%2FUniversal-Web-MCP"
+    },
+    {
+      "text": "Readme",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP#readme-ov-file"
+    },
+    {
+      "text": "MIT license",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP#MIT-1-ov-file"
+    },
+    {
+      "text": "Activity",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/activity"
+    },
+    {
+      "text": "0 forks",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/forks"
+    },
+    {
+      "text": "Report repository",
+      "href": "https://github.com/contact/report-content?content_url=https%3A%2F%2Fgithub.com%2Farq5158-dotcom%2FUniversal-Web-MCP&report=arq5158-dotcom+%28user%29"
+    },
+    {
+      "text": "1 Branch",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/branches"
+    },
+    {
+      "text": "0 Tags",
+      "href": "https://github.com/arq5158-dotcom/Universal-Web-MCP/tags"
+    }
+  ],
+  "interactive_inputs": [
+    {
+      "tag": "INPUT",
+      "placeholder": "Go to file",
+      "aria": "Go to file",
+      "className": "prc-components-Input-IwWrt"
+    }
+  ],
+  "controls_and_buttons": [
+    "Platform",
+    "Solutions",
+    "Resources",
+    "Open Source",
+    "Enterprise",
+    "Search /",
+    "More items",
+    "main",
+    "Go to file",
+    "Code",
+    "View all files",
+    "Manage cookies",
+    "Do not share my personal information"
+  ],
+  "intercepted_apis": [
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/branch-and-tag-count",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "branches": {
+            "type": "integer"
+          },
+          "tags": {
+            "type": "integer"
+          }
+        }
+      },
+      "sample": {
+        "branches": 1,
+        "tags": 0
+      }
+    },
+    {
+      "url": "https://github.com/manifest.json",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "GitHub"
+          },
+          "short_name": {
+            "type": "string",
+            "example": "GitHub"
+          },
+          "start_url": {
+            "type": "string",
+            "example": "/"
+          },
+          "display": {
+            "type": "string",
+            "example": "standalone"
+          },
+          "icons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sizes": {
+                  "type": "string",
+                  "example": "114x114"
+                },
+                "src": {
+                  "type": "string",
+                  "example": "https://github.githubassets.com/assets/a"
+                }
+              }
+            },
+            "sample_length": 11
+          },
+          "prefer_related_applications": {
+            "type": "boolean"
+          },
+          "related_applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "example": "play"
+                },
+                "url": {
+                  "type": "string",
+                  "example": "https://play.google.com/store/apps/detai"
+                },
+                "id": {
+                  "type": "string",
+                  "example": "com.github.android"
+                }
+              }
+            },
+            "sample_length": 1
+          }
+        }
+      },
+      "sample": {
+        "name": "GitHub",
+        "short_name": "GitHub",
+        "start_url": "/",
+        "display": "standalone",
+        "icons": "List[11 items]",
+        "prefer_related_applications": true,
+        "related_applications": "List[1 items]"
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/latest-commit",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "oid": {
+            "type": "string",
+            "example": "abe398eaa7ef4e29c1e6c7878446cf1801c51770"
+          },
+          "url": {
+            "type": "string",
+            "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-10-26T16:14:29.000+05:00"
+          },
+          "shortMessageHtmlLink": {
+            "type": "string",
+            "example": "<a data-pjax=\"true\" data-hovercard-url=\""
+          },
+          "bodyMessageHtml": {
+            "type": "string",
+            "example": "\u2026ogo SVG, film grain, and dual dark/ligh"
+          },
+          "author": {
+            "type": "object",
+            "properties": {
+              "displayName": {
+                "type": "string",
+                "example": "arq5158-dotcom"
+              },
+              "login": {
+                "type": "string",
+                "example": "arq5158-dotcom"
+              },
+              "path": {
+                "type": "string",
+                "example": "/arq5158-dotcom"
+              },
+              "avatarUrl": {
+                "type": "string",
+                "example": "https://avatars.githubusercontent.com/u/"
+              }
+            }
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "login": {
+                  "type": "string",
+                  "example": "arq5158-dotcom"
+                },
+                "displayName": {
+                  "type": "string",
+                  "example": "arq5158-dotcom"
+                },
+                "avatarUrl": {
+                  "type": "string",
+                  "example": "https://avatars.githubusercontent.com/u/"
+                },
+                "path": {
+                  "type": "string",
+                  "example": "/arq5158-dotcom"
+                },
+                "profileName": {
+                  "type": "null"
+                },
+                "isGitHub": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "sample_length": 1
+          },
+          "committerAttribution": {
+            "type": "boolean"
+          },
+          "committer": {
+            "type": "object",
+            "properties": {
+              "login": {
+                "type": "string",
+                "example": "arq5158-dotcom"
+              },
+              "displayName": {
+                "type": "string",
+                "example": "arq5158-dotcom"
+              },
+              "avatarUrl": {
+                "type": "string",
+                "example": "https://avatars.githubusercontent.com/u/"
+              },
+              "path": {
+                "type": "string",
+                "example": "/arq5158-dotcom"
+              },
+              "profileName": {
+                "type": "null"
+              },
+              "isGitHub": {
+                "type": "boolean"
+              }
+            }
+          },
+          "showPusherAttribution": {
+            "type": "boolean"
+          },
+          "pusher": {
+            "type": "null"
+          },
+          "pushedDate": {
+            "type": "null"
+          },
+          "status": {
+            "type": "null"
+          },
+          "statusChecksAliveChannel": {
+            "type": "string",
+            "example": "eyJjIjoicmVwbzoxNDM0MTU1MTM1OmNvbW1pdDph"
+          },
+          "isSpoofed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "sample": {
+        "oid": "abe398eaa7ef4e29c1e6c7878446cf1801c51770",
+        "url": "/arq5158-dotcom/Universal-Web-MCP/commit/abe398eaa7ef4e29c1e6c7878446cf1801c51770",
+        "date": "2026-10-26T16:14:29.000+05:00",
+        "shortMessageHtmlLink": "<a data-pjax=\"true\" data-hovercard-url=\"/arq5158-dotcom/Universal-Web-MCP/commit/abe398eaa7ef4e29c1e... [truncated]",
+        "bodyMessageHtml": "\u2026ogo SVG, film grain, and dual dark/light themes",
+        "author": {
+          "displayName": "...",
+          "login": "...",
+          "path": "...",
+          "avatarUrl": "..."
+        },
+        "authors": "List[1 items]",
+        "committerAttribution": false,
+        "committer": {
+          "login": "...",
+          "displayName": "...",
+          "avatarUrl": "...",
+          "path": "...",
+          "profileName": "..."
+        },
+        "showPusherAttribution": false,
+        "pusher": null,
+        "pushedDate": null,
+        "status": null,
+        "statusChecksAliveChannel": "eyJjIjoicmVwbzoxNDM0MTU1MTM1OmNvbW1pdDphYmUzOThlYWE3ZWY0ZTI5YzFlNmM3ODc4NDQ2Y2YxODAxYzUxNzcwIiwidCI6... [truncated]",
+        "isSpoofed": false
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/recently-touched-branches",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "null"
+          },
+          "branches": {
+            "type": "array",
+            "items": {}
+          },
+          "canCreatePullRequest": {
+            "type": "boolean"
+          }
+        }
+      },
+      "sample": {
+        "channel": null,
+        "branches": "List[0 items]",
+        "canCreatePullRequest": true
+      }
+    },
+    {
+      "url": "https://github.com/_global-navigation/payloads.json",
+      "method": "GET",
+      "status": 404,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          }
+        }
+      },
+      "sample": {
+        "error": "Not Found"
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/tree-commit-info",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "object",
+            "properties": {
+              ".cursor": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "180f0ed65c12132d2bc0144ace8bca630d60d073"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:21:40.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "cookie_sync.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "990998af4152ce46cfa897a015d6213280e0f501"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:19:09.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "fallback.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "14888f03112c0ad52cb844716cddf47f9ff633ed"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:50:49.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "README.md": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "2ffd669f99f0a3432c9f85c62229cf9fc8bcefab"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:49:36.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "flow_video_automator.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "9f93e3164b0554d395ba71949842a4b8f2765769"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:42:52.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "platform_learner.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "1e1794cf9df4df0bb5122e453b71e10437ddf6b0"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:33:01.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "platform_skills": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "1e1794cf9df4df0bb5122e453b71e10437ddf6b0"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:33:01.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "interceptor.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "a0e6f5c9fcf785bc2bb7e64f0524d783cc54e5d8"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:51:32.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "get_live_flow_credits.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "bf3e8ccb98f6e306328aaa2341a70c46de0260dc"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T16:05:42.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "auth_flow.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "e999f3e78e3ecd605f0661b103a560d7441a5b28"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:54:17.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "test_dl_real.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "a0cca382ca6a390d310868d7ddb08f5baac19bd1"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:19:06.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "server.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "9f93e3164b0554d395ba71949842a4b8f2765769"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:42:52.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              ".gitignore": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "1e1794cf9df4df0bb5122e453b71e10437ddf6b0"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:33:01.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "GOOGLE_FLOW_AUTOMATION_GUIDE.md": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "a0cca382ca6a390d310868d7ddb08f5baac19bd1"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:19:06.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "LICENSE": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "990998af4152ce46cfa897a015d6213280e0f501"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:19:09.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "generate_ad_video.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "1e1794cf9df4df0bb5122e453b71e10437ddf6b0"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:33:01.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "app.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "abe398eaa7ef4e29c1e6c7878446cf1801c51770"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T16:14:29.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "test_server.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "990998af4152ce46cfa897a015d6213280e0f501"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T14:19:09.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "GOOGLE_FLOW_SKILL.md": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "9f93e3164b0554d395ba71949842a4b8f2765769"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:42:52.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "session_manager.py": {
+                "type": "object",
+                "properties": {
+                  "oid": {
+                    "type": "string",
+                    "example": "1e1794cf9df4df0bb5122e453b71e10437ddf6b0"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "/arq5158-dotcom/Universal-Web-MCP/commit"
+                  },
+                  "date": {
+                    "type": "string",
+                    "example": "2026-10-26T15:33:01.000+05:00"
+                  },
+                  "shortMessageHtmlLink": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample": {
+        "entries": {
+          ".cursor": "...",
+          "cookie_sync.py": "...",
+          "fallback.py": "...",
+          "README.md": "...",
+          "flow_video_automator.py": "..."
+        }
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/_sidebar",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "releases": {
+            "type": "object",
+            "properties": {
+              "releasesPath": {
+                "type": "string",
+                "example": "/arq5158-dotcom/Universal-Web-MCP/releas"
+              },
+              "tagsPath": {
+                "type": "string",
+                "example": "/arq5158-dotcom/Universal-Web-MCP/tags"
+              },
+              "canWrite": {
+                "type": "boolean"
+              }
+            }
+          },
+          "contributors": {
+            "type": "object",
+            "properties": {
+              "contributorCount": {
+                "type": "integer"
+              },
+              "contributors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "login": {
+                      "type": "..."
+                    },
+                    "profilePath": {
+                      "type": "..."
+                    },
+                    "avatarUrl": {
+                      "type": "..."
+                    }
+                  }
+                },
+                "sample_length": 1
+              },
+              "contributorsPath": {
+                "type": "string",
+                "example": "/arq5158-dotcom/Universal-Web-MCP/graphs"
+              }
+            }
+          },
+          "languages": {
+            "type": "object",
+            "properties": {
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "..."
+                    },
+                    "percentage": {
+                      "type": "..."
+                    },
+                    "color": {
+                      "type": "..."
+                    },
+                    "searchAlias": {
+                      "type": "..."
+                    }
+                  }
+                },
+                "sample_length": 1
+              },
+              "isFork": {
+                "type": "boolean"
+              },
+              "ownerLogin": {
+                "type": "string",
+                "example": "arq5158-dotcom"
+              },
+              "repoName": {
+                "type": "string",
+                "example": "Universal-Web-MCP"
+              }
+            }
+          },
+          "sponsors": {
+            "type": "null"
+          },
+          "deployments": {
+            "type": "null"
+          },
+          "packages": {
+            "type": "null"
+          },
+          "usedBy": {
+            "type": "null"
+          },
+          "suggestedWorkflows": {
+            "type": "null"
+          },
+          "configCallToAction": {
+            "type": "null"
+          }
+        }
+      },
+      "sample": {
+        "releases": {
+          "releasesPath": "...",
+          "tagsPath": "...",
+          "canWrite": "..."
+        },
+        "contributors": {
+          "contributorCount": "...",
+          "contributors": "...",
+          "contributorsPath": "..."
+        },
+        "languages": {
+          "languages": "...",
+          "isFork": "...",
+          "ownerLogin": "...",
+          "repoName": "..."
+        },
+        "sponsors": null,
+        "deployments": null,
+        "packages": null,
+        "usedBy": null,
+        "suggestedWorkflows": null,
+        "configCallToAction": null
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/refs",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "main"
+            },
+            "sample_length": 1
+          },
+          "cacheKey": {
+            "type": "string",
+            "example": "v0:1793006367.0"
+          }
+        }
+      },
+      "sample": {
+        "refs": "List[1 items]",
+        "cacheKey": "v0:1793006367.0"
+      }
+    },
+    {
+      "url": "https://github.com/arq5158-dotcom/Universal-Web-MCP/overview-files/main",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "displayName": {
+                  "type": "string",
+                  "example": "README.md"
+                },
+                "repoName": {
+                  "type": "string",
+                  "example": "Universal-Web-MCP"
+                },
+                "refName": {
+                  "type": "string",
+                  "example": "main"
+                },
+                "path": {
+                  "type": "string",
+                  "example": "README.md"
+                },
+                "preferredFileType": {
+                  "type": "string",
+                  "example": "readme"
+                },
+                "tabName": {
+                  "type": "string",
+                  "example": "README"
+                },
+                "richText": {
+                  "type": "string",
+                  "example": "<article class=\"markdown-body entry-cont"
+                },
+                "loaded": {
+                  "type": "boolean"
+                },
+                "timedOut": {
+                  "type": "boolean"
+                },
+                "errorMessage": {
+                  "type": "null"
+                },
+                "headerInfo": {
+                  "type": "object",
+                  "properties": {
+                    "toc": {
+                      "type": "..."
+                    },
+                    "siteNavLoginPath": {
+                      "type": "..."
+                    }
+                  }
+                }
+              }
+            },
+            "sample_length": 2
+          },
+          "processingTime": {
+            "type": "integer"
+          }
+        }
+      },
+      "sample": {
+        "files": "List[2 items]",
+        "processingTime": 0
+      }
+    }
+  ]
+}
