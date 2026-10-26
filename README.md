@@ -62,7 +62,9 @@ docker compose down -v            # stop and delete all saved data
 
 Ports are bound to `127.0.0.1`, so only this computer can reach them. To protect the noVNC view with a password, create a `.env` file next to `docker-compose.yml` containing `VNC_PASSWORD=your-password`, then run `docker compose up -d`.
 
-**Connect an AI app to the container:** use `docker exec` instead of a local Python path. The MCP server runs inside the container and sends its events to the dashboard:
+**Connect Claude (Windows):** the `CREATE_DOCKER_ICON.bat` setup also registers Ashzo with **Claude Desktop** and **Claude Code**, so there's nothing to type. Quit Claude Desktop completely and open it again. Claude Code picks it up in new sessions. Your existing Claude settings are kept, and a `.bak` copy of each config is made first.
+
+For other AI apps, or to set it up by hand, use `docker exec` instead of a local Python path. The MCP server runs inside the container and sends its events to the dashboard:
 
 ```json
 {
