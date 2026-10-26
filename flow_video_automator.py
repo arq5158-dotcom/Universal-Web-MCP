@@ -127,6 +127,69 @@ def build_30s_storyboard(concept: str, model: str = "omni_flash") -> List[SceneP
         ]
 
 
+def validate_and_educate_prompt(
+    prompt: str,
+    model: str = "omni_flash",
+    duration: int = 8,
+    has_start_frame: bool = False,
+    has_end_frame: bool = False
+) -> Dict[str, Any]:
+    """
+    Validates user video prompts against Google Flow constraints,
+    educates the user if the prompt is suboptimal, and auto-refines it.
+    """
+    is_omni = "omni" in model.lower()
+    valid_durations = [4, 6, 8, 10] if is_omni else [4, 6, 8]
+    warnings = []
+    tips = []
+    refined = prompt.strip()
+
+    # Duration Check
+    if duration not in valid_durations and duration != 30:
+        if is_omni:
+            warnings.append(
+                f"Requested duration {duration}s is invalid for Omni. "
+                "Omni supports odd/even durations: 4s, 6s, 8s, or 10s. Defaulting to 8s."
+            )
+            duration = 8
+        else:
+            warnings.append(
+                f"Requested duration {duration}s exceeds Veo 3.1 max of 8s. Capping at 8s."
+            )
+            duration = 8
+
+    # Photorealism elements check
+    prompt_lower = prompt.lower()
+    has_camera = any(w in prompt_lower for w in ["dolly", "tracking", "pan", "push", "zoom", "fpv", "crane", "close-up", "shot"])
+    has_lighting = any(w in prompt_lower for w in ["lighting", "light", "rays", "shadow", "neon", "golden hour", "contrast", "volumetric"])
+    has_lens = any(w in prompt_lower for w in ["lens", "35mm", "anamorphic", "depth of field", "4k", "photorealism"])
+
+    if not has_camera:
+        tips.append("Consider adding camera motion (e.g. 'Slow dolly push-in', 'FPV drone acceleration') to avoid static video.")
+        refined += ", slow cinematic dolly forward push-in"
+    if not has_lighting:
+        tips.append("Consider specifying lighting (e.g. 'volumetric light rays', 'dramatic high contrast moody lighting').")
+        refined += ", dramatic cinematic lighting"
+    if not has_lens:
+        tips.append("Consider specifying lens characteristics (e.g. '35mm anamorphic lens, shallow depth of field, 4K resolution').")
+        refined += ", 35mm lens, 4K crisp resolution"
+
+    # Keyframe guidance
+    if has_start_frame and not has_end_frame:
+        tips.append("Tip: You provided a Starting Frame (0s). Adding an Ending Frame allows Gemini Omni to compute smooth temporal morphing.")
+
+    return {
+        "is_valid": len(warnings) == 0,
+        "warnings": warnings,
+        "education_tips": tips,
+        "original_prompt": prompt,
+        "refined_prompt": refined,
+        "model": model,
+        "duration": duration,
+        "supported_durations": valid_durations
+    }
+
+
 def format_download_filename(
     project_name: str,
     model: str,

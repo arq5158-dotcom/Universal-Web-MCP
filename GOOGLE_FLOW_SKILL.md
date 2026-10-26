@@ -105,25 +105,47 @@ Every Google Flow account operates under specific daily and monthly credit alloc
 
 ---
 
-## 🤖 6. AI Agent Conversational Protocol (Interactive Interview)
+## 🤖 6. AI Agent Conversational Protocol & Prompt Education
 
-Whenever an AI agent assists a user in creating videos in Google Flow, the agent must:
+When an AI agent interacts with a user to generate videos in Google Flow, the agent **MUST** follow this structured, intelligent protocol:
 
-1. **Display Account Credit Balance:**
-   - Inform the user of their available daily allowance (50 credits) and active plan balance (e.g., Google AI Pro 1,000 monthly credits).
-2. **Solicit Model Choice:**
-   - **Gemini Omni Flash** (Fast, 4s/6s/8s/10s, rapid iteration)
-   - **Veo 3.1** (Photorealistic 8s, 4K, native audio)
-   - **Gemini Omni** (Multimodal editing, keyframe interpolation)
-3. **Solicit Target Duration:**
-   - **4s, 6s, 8s, 10s** (Single shot)
-   - **30-Second Commercial Ad** (Automated 4-scene assembly)
-4. **Solicit Download Quality:**
-   - **1080p Upscaled** (Recommended for production)
-   - **720p Native** (Fastest download)
-   - **4K Cinematic** (Requires Pro tier credits)
-5. **Frame Interpolation Confirmation:**
-   - Ask if the user wants to specify a **Starting Frame** and/or **Ending Frame** or generate purely from text.
+### Step 1: Upfront Credit HUD in Chat
+Before asking the user to make decisions, display their current Google Flow credits balance:
+```text
+🎬 Google Flow Account HUD:
+- Plan: Google AI Pro Tier (arq5020@gmail.com)
+- Daily Allocation: 50 Credits (Refreshes every 24 hours)
+- Monthly Pro Balance: 1,000 Credits
+- Total Available: 1,050 Credits
+- Estimated Generation Cost: ~5 Credits (Omni Flash) / ~10 Credits (Veo 3.1)
+```
+
+### Step 2: One-Time Preferences Inquiry
+**IMPORTANT:** Ask the user for their global preferences **ONCE ONLY** at the start of the project session — **never** interrupt them after each video:
+- **Default Export Quality:** Default to `1080p Upscaled` unless they specify 720p (for raw speed) or 4K Ultra HD.
+- **Dynamic Clip Duration:** Ask for their duration preference (e.g., 4s, 6s, 8s, 10s, or 30s commercial ad) based on their project needs.
+
+### Step 3: Prompt Analysis, Validation & User Education
+The agent must inspect the user's prompt concept:
+1. **If the prompt is vague or underspecified:**  
+   *Educate the user on the 5-point photorealism formula.*  
+   *Example critique:*  
+   > "Your prompt 'make a tech ad' is too generic for generative video models. In Google Flow (Veo 3.1 & Omni Flash), the diffusion engine requires concrete camera motion, lens characteristics, lighting physics, and subject action.  
+   > **Refined 4K Prompt:** *'Cinematic 35mm close-up of a futuristic developer terminal with glowing cyan data streams. Smooth slow-dolly push-in, volumetric light rays, shallow depth of field, 4K crisp photorealism.'*"
+2. **If the user requests an invalid single-clip duration (e.g., 15s or 20s):**  
+   *Educate the user on model physical limits:*  
+   > "Google Flow limits single clips: **Gemini Omni Flash** supports odd/even durations (**4s, 6s, 8s, 10s**), while **Veo 3.1** caps at **8s**. For durations beyond 10s, we automatically split your concept into a 4-scene storyboard (e.g. 8s + 8s + 8s + 6s = 30s commercial) and download each scene locally."
+3. **If the user wants seamless visual transitions or character consistency:**  
+   *Educate on Keyframe Interpolation & Tags:*  
+   > "Use `@FirstFrame:AssetID` (starting frame at 0.0s) and `@LastFrame:AssetID` (ending frame at 4s–10s). Gemini Omni will compute physics-based in-between motion to seamlessly morph between the two images."
+
+### Step 4: Autonomous Execution & Asset Naming
+Once the prompt and duration are verified, the agent executes the generation, waits for the render, and downloads the file using the standardized naming syntax:
+`[Project]_[Model]_[Duration]s_[Keyframes]_[Slug]_[Timestamp].mp4`
+And reports:
+- Final file path on local disk
+- File size (in MB)
+- Deducted credits and remaining balance
 
 ---
 
