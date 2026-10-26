@@ -24,6 +24,9 @@ RUN pip install -r requirements.txt \
  && python -m playwright install --with-deps chromium \
  && rm -rf /var/lib/apt/lists/*
 
+# Where the dashboard's "Open browser view" button goes (kept below the slow steps so they stay cached).
+ENV ASHZO_VIEWER_URL="http://localhost:6080/vnc.html?autoconnect=true&resize=scale"
+
 COPY . .
 COPY docker/entrypoint.sh /usr/local/bin/ashzo-entrypoint
 RUN chmod +x /usr/local/bin/ashzo-entrypoint

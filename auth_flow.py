@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import sys
 import time
 import uuid
@@ -107,7 +108,9 @@ async def _run(job: Dict[str, Any]) -> None:
         timeout = int(job["timeout"])
         deadline = time.time() + timeout
         job["deadline"] = int(deadline * 1000)
-        await _publish(job, "waiting", "Sign in on the Chrome window that just opened. This updates by itself.")
+        where = ("the browser view tab (press \"Open browser view\" if it did not open)"
+                 if os.environ.get("ASHZO_VIEWER_URL") else "the Chrome window that just opened")
+        await _publish(job, "waiting", f"Sign in on {where}. This updates by itself.")
 
         signed_in = False
         while time.time() < deadline:

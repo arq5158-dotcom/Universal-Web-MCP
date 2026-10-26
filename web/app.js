@@ -400,7 +400,15 @@ async function peekBrowser() {
     if (!r.running) toast('The Ashzo Browser is not open. Press "Show window" to start it.', 'info');
   } catch (e) { toast(e.message, 'error'); }
 }
+// In Docker the Ashzo Browser runs on the container's virtual screen, so "the window" is a browser view (noVNC) in a tab.
+let viewerUrl = null;
+function openViewer() {
+  if (!viewerUrl) return;
+  const tab = window.open(viewerUrl, 'ashzo-browser-view');
+  if (!tab) toast('Your browser blocked the new tab. Open ' + viewerUrl, 'info');
+}
 async function showBrowserWindow() {
+  openViewer(); // first, so the browser still counts it as a click
   try {
     toast('Opening the Ashzo Browser…');
     await api('POST', '/api/browser/open');
@@ -638,6 +646,13 @@ async function loadSessions() {
 async function loadBrowserStatus() {
   try {
     const s = await api('GET', '/api/browser/status');
+    viewerUrl = s.viewer_url || null;
+    if (viewerUrl) {
+      $$('[onclick="showBrowserWindow()"]').forEach((b) => {
+        const label = [...b.childNodes].reverse().find((n) => n.nodeType === 3 && n.textContent.trim());
+        if (label) label.textContent = label.textContent.replace(/Show window|Open window|Bring the window to front/, 'Open browser view');
+      });
+    }
     $('#browserStatus').textContent = s.running ? `Running · ${s.page ? new URL(s.page).host : 'no tab'}` : (s.chrome ? 'Not running' : 'Chrome not found');
   } catch { $('#browserStatus').textContent = 'Unknown'; }
 }
@@ -674,6 +689,7 @@ async function startLogin() {
   const preset = dropdownValue('dropdown-platform');
   const url = preset === 'custom' ? $('#loginCustomUrl').value.trim() : preset;
   if (!url) { toast('Enter the website address.', 'error'); return; }
+  openViewer(); // Docker: show the browser view now, the sign-in page appears in it
   const btn = $('#launchLoginBtn');
   btn.disabled = true;
   btn.innerHTML = `${spinner()}<span>Opening…</span>`;
@@ -942,6 +958,7 @@ function init() {
   renderDurations();
   api('GET', '/api/settings').then((s) => { if (s && s.aspect_ratio) setDropdown('dropdown-aspect', s.aspect_ratio, true); }).catch(() => {});
   api('GET', '/api/health').then((h) => { if (h && h.version) $('#versionBadge').textContent = 'v' + h.version.split('.').slice(0, 2).join('.'); }).catch(() => {});
+  loadBrowserStatus(); // learns the browser-view address when running in Docker
   loadSessions();
   loadDownloads();
   loadCredits();

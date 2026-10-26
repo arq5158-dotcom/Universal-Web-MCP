@@ -49,7 +49,7 @@ docker compose up -d --build
 The first build takes a few minutes (it downloads Chromium). After that:
 
 - **Dashboard:** http://localhost:8000
-- **Ashzo Browser:** http://localhost:6080/vnc.html. This is the browser the agent works in. Open it once to sign in to Google (for Flow). It is a live view of the browser running inside the container.
+- **Ashzo Browser:** http://localhost:6080/vnc.html. This is the browser the agent works in. Open it once to sign in to Google (for Flow). It is a live view of the browser running inside the container. In the dashboard, **Connect** and the **Open browser view** buttons open it for you in a new tab.
 - **Your data** (sign-ins, settings, downloads) is kept in the Docker volume `ashzo-data`, so it survives restarts and rebuilds. Your downloaded videos are in there too.
 
 Useful commands:

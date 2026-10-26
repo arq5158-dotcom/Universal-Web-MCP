@@ -375,6 +375,8 @@ class BrowserHub:
             "port": self.port,
             "page": page.url if page else None,
             "chrome": self.executable or find_chrome(),
+            # Set in the Docker image: the browser runs on a virtual screen, viewable here (noVNC).
+            "viewer_url": os.environ.get("ASHZO_VIEWER_URL") or None,
         }
 
     async def storage_state(self) -> Dict[str, Any]:
