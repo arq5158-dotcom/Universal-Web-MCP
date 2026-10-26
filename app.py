@@ -1,14 +1,13 @@
 """
-Universal-Web-MCP Web Dashboard & SSE Server.
-Awwwards-Inspired Luxury Autonomous Studio (https://www.awwwards.com/websites inspiration).
+Universal-Web-MCP Minimalist Studio.
+Inspired by top Awwwards minimal designs (Linear.app, Reflect.app, Vercel).
 Features:
-- Obsidian luxury dark brutalism with ambient mesh glows, grain overlay, and micro-typography.
-- Real-time Account Credits & Quota HUD (50 Daily / 1,000 Monthly Google AI Pro credits).
-- Multi-Model Creative Studio: Gemini Omni Flash (odd/even durations 4s, 6s, 8s, 10s), Veo 3.1 (8s 4K), Nano Banana Pro.
-- Keyframe Interpolation Deck: First Frame (Starting Frame 0s) -> Last Frame (Ending Frame).
-- Asset Naming & Live File Renaming Studio: Standardized [Project]_[Model]_[Duration]s_[Keyframes]_[Slug] format + instant renaming.
-- Persistent Multi-Session Profile Manager (Add, Remove, Retain across machine restarts).
-- Autonomous Platform Skill Engine with live progress ('getting ready on dashboard...').
+- Minimal text, zero clutter, ultra-clean aesthetic.
+- Seamless Light / Dark theme toggle (persisted in localStorage).
+- Persistent Session Manager with clear status (Connected vs Needs Login, 1-Click Connect).
+- Generative Studio: Omni Flash (4s, 6s, 8s, 10s), Veo 3.1 (8s), Keyframe Interpolation, 1080p default.
+- Download Vault with inline file renaming.
+- 3-Tier Routing Playground (<200ms Fast Path).
 """
 
 import os
@@ -25,7 +24,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# Core imports
 from server import (
     mcp,
     universal_request,
@@ -40,16 +38,16 @@ from server import (
 from session_manager import session_manager
 from auth_flow import run_interactive_login
 from platform_learner import platform_learner
-from flow_video_automator import FlowVideoAutomator, format_download_filename, build_30s_storyboard
+from flow_video_automator import FlowVideoAutomator, format_download_filename, build_30s_storyboard, validate_and_educate_prompt
 
 BASE_DIR = Path(__file__).resolve().parent
 DOWNLOADS_DIR = BASE_DIR / "downloads"
 DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 web_app = FastAPI(
-    title="Universal-Web-MCP Awwwards Luxury Studio",
+    title="Universal-Web-MCP Minimal Studio",
     description="Sub-second 3-Tier Hybrid Routing & Autonomous Creative Studio",
-    version="3.0.0"
+    version="4.0.0"
 )
 
 web_app.add_middleware(
@@ -73,11 +71,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universal-Web-MCP | Awwwards Site of the Day Edition</title>
+  <title>Universal-Web-MCP | Minimal Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script>
     tailwind.config = {
@@ -86,335 +84,234 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         extend: {
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            display: ['"Syne"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            obsidian: '#050609',
-            surface: {
-              DEFAULT: '#0b0d14',
-              card: '#10131e',
-              border: '#1a1f30',
-              hover: '#242a42'
-            },
-            gold: '#e6af2e',
-            neonCyan: '#00f2fe',
-            neonViolet: '#8a2be2',
-            emeraldGlow: '#00e676'
+            brand: '#6366f1',
           }
         }
       }
     }
   </script>
   <style>
-    :root {
-      color-scheme: dark;
+    /* Dark Theme */
+    html.dark {
+      background-color: #090a0f;
+      color: #f1f5f9;
     }
-    body {
-      background-color: #050609;
-      background-image: 
-        radial-gradient(circle at 10% 10%, rgba(138, 43, 226, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 90% 85%, rgba(0, 242, 254, 0.08) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.05) 0%, transparent 60%);
-      background-attachment: fixed;
-      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    }
-    /* Noise texture overlay for authentic Awwwards look */
-    .awwwards-grain {
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
-    }
-    .glass-luxury {
-      background: rgba(16, 19, 30, 0.72);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
+    html.dark .ui-bg { background-color: #090a0f; }
+    html.dark .ui-panel {
+      background: rgba(18, 20, 30, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     }
-    .glass-input {
-      background: rgba(11, 13, 20, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    html.dark .ui-input {
+      background: #0f111a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #f8fafc;
     }
-    .glass-input:focus {
-      border-color: #8a2be2;
-      box-shadow: 0 0 20px -3px rgba(138, 43, 226, 0.45);
-      outline: none;
+    html.dark .ui-subpanel {
+      background: #0f111a;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .badge-ribbon {
-      background: linear-gradient(135deg, rgba(230, 175, 46, 0.2), rgba(230, 175, 46, 0.05));
-      border: 1px solid rgba(230, 175, 46, 0.4);
-      color: #e6af2e;
+    html.dark .ui-border { border-color: rgba(255, 255, 255, 0.08); }
+    html.dark .ui-text-muted { color: #94a3b8; }
+    html.dark .ui-text-dim { color: #64748b; }
+
+    /* Light Theme (Linear / Vercel minimal aesthetic) */
+    html:not(.dark) {
+      background-color: #f8fafc;
+      color: #0f172a;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+    html:not(.dark) .ui-bg { background-color: #f8fafc; }
+    html:not(.dark) .ui-panel {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
     }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.3);
+    html:not(.dark) .ui-input {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      color: #0f172a;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.18);
-      border-radius: 4px;
+    html:not(.dark) .ui-subpanel {
+      background: #f1f5f9;
+      border: 1px solid rgba(0, 0, 0, 0.06);
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-    .glow-cyan {
-      box-shadow: 0 0 25px -4px rgba(0, 242, 254, 0.35);
-    }
-    .glow-violet {
-      box-shadow: 0 0 25px -4px rgba(138, 43, 226, 0.4);
-    }
+    html:not(.dark) .ui-border { border-color: rgba(0, 0, 0, 0.08); }
+    html:not(.dark) .ui-text-muted { color: #64748b; }
+    html:not(.dark) .ui-text-dim { color: #94a3b8; }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.25); border-radius: 4px; }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col font-sans selection:bg-purple-600/40 relative awwwards-grain">
+<body class="ui-bg min-h-screen flex flex-col font-sans transition-colors duration-200">
 
-  <!-- Awwwards Floating SOTD Honor Badge -->
-  <div class="fixed bottom-4 right-4 z-50 pointer-events-auto">
-    <div class="badge-ribbon rounded-full px-4 py-1.5 flex items-center gap-2 shadow-2xl backdrop-blur-md cursor-pointer hover:scale-105 transition">
-      <i class="fa-solid fa-trophy text-xs"></i>
-      <span class="text-[10px] font-mono tracking-widest font-extrabold uppercase">AWWWARDS S.O.T.D. &bull; 9.8 / 10</span>
-    </div>
-  </div>
-
-  <!-- Luxury Editorial Navbar -->
-  <header class="border-b border-surface-border bg-obsidian/85 backdrop-blur-2xl sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-400 flex items-center justify-center glow-violet shadow-2xl">
-          <i class="fa-solid fa-bolt-lightning text-white text-xl"></i>
+  <!-- Minimal Header -->
+  <header class="ui-border border-b backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm font-mono font-bold text-sm">
+          UW
         </div>
         <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-xl font-display font-black tracking-tight text-white uppercase">
-              Universal-Web-MCP
-            </h1>
-            <span class="text-[9px] uppercase font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold tracking-widest">
-              Awwwards Edition
-            </span>
-          </div>
-          <p class="text-xs text-slate-400 font-mono flex items-center gap-2 mt-0.5">
-            <span class="text-emerald-400">&lt;200ms Fast Path</span>
-            <span class="text-slate-600">&bull;</span>
-            <span>CDP Sniffer</span>
-            <span class="text-slate-600">&bull;</span>
-            <span>DOM Fallback</span>
-            <span class="text-slate-600">&bull;</span>
-            <span class="text-purple-300">Omni Flash 4s/6s/8s/10s</span>
-          </p>
+          <span class="font-semibold text-sm tracking-tight flex items-center gap-2">
+            Universal-Web-MCP
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 font-medium">FastMCP</span>
+          </span>
         </div>
       </div>
 
-      <!-- Live Credits & Active Session HUD -->
+      <!-- Right HUD & Theme Switch -->
       <div class="flex items-center space-x-3">
-        <!-- Live Credits Widget -->
-        <div class="hidden md:flex items-center gap-3 px-4 py-2 rounded-2xl bg-surface-card border border-surface-border">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-            <span class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Credits HUD:</span>
-          </div>
-          <div class="flex items-center gap-3 text-xs font-mono font-bold">
-            <span class="text-cyan-400" title="Refreshes every 24 hours"><i class="fa-solid fa-sun mr-1 text-[10px]"></i>50 Daily</span>
-            <span class="text-purple-400" title="Google AI Pro Monthly Balance"><i class="fa-solid fa-gem mr-1 text-[10px]"></i>1,000 Pro</span>
-          </div>
+        <!-- Active Session Pill -->
+        <div id="activeSessionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-lg ui-subpanel text-xs font-mono">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="ui-text-dim">Active:</span>
+          <span id="activeAccountName" class="font-medium text-indigo-500">None</span>
         </div>
 
-        <button onclick="startInteractiveAuth()" class="text-xs bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:opacity-90 text-white font-semibold px-4 py-2.5 rounded-xl transition shadow-lg shadow-purple-600/30 flex items-center gap-2">
-          <i class="fa-solid fa-key text-[11px]"></i>
-          <span>1-Click Google Login</span>
+        <!-- Credits Badge -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ui-subpanel text-xs font-mono">
+          <span class="ui-text-dim">Credits:</span>
+          <span class="text-emerald-500 font-semibold" title="50 Daily + 1,000 Monthly">1,050</span>
+        </div>
+
+        <!-- Light / Dark Theme Toggle Button -->
+        <button onclick="toggleTheme()" id="themeToggleBtn" class="p-2 rounded-lg ui-subpanel ui-text-muted hover:text-indigo-500 transition text-xs" title="Toggle Light / Dark mode">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <button onclick="startInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-2">
+          <i class="fa-solid fa-plus text-[10px]"></i>
+          <span>Login Account</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-6 space-y-6">
-
-    <!-- KPI / Performance Counters (Awwwards Style) -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="glass-luxury rounded-2xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition">
-        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition text-6xl text-purple-400">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Fast Path Latency</p>
-        <h3 class="text-3xl font-display font-extrabold text-emerald-400 font-mono mt-1">&lt; 120 ms</h3>
-        <p class="text-[11px] text-slate-500 mt-1">Replay via stored session cookies</p>
-      </div>
-
-      <div class="glass-luxury rounded-2xl p-5 relative overflow-hidden group hover:border-cyan-500/40 transition">
-        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition text-6xl text-cyan-400">
-          <i class="fa-solid fa-clapperboard"></i>
-        </div>
-        <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Omni Clip Durations</p>
-        <h3 class="text-3xl font-display font-extrabold text-cyan-400 font-mono mt-1">4s &bull; 6s &bull; 8s &bull; 10s</h3>
-        <p class="text-[11px] text-slate-500 mt-1">Odd &amp; even dynamic temporal frames</p>
-      </div>
-
-      <div class="glass-luxury rounded-2xl p-5 relative overflow-hidden group hover:border-gold/40 transition">
-        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition text-6xl text-gold">
-          <i class="fa-solid fa-coins"></i>
-        </div>
-        <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Google AI Pro Plan</p>
-        <h3 class="text-3xl font-display font-extrabold text-gold font-mono mt-1">1,050 Total</h3>
-        <p class="text-[11px] text-slate-500 mt-1">50 Daily + 1,000 Monthly credits</p>
-      </div>
-
-      <div class="glass-luxury rounded-2xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition">
-        <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition text-6xl text-purple-400">
-          <i class="fa-solid fa-floppy-disk"></i>
-        </div>
-        <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Session Retention</p>
-        <h3 class="text-3xl font-display font-extrabold text-purple-400 font-mono mt-1">Permanent</h3>
-        <p class="text-[11px] text-slate-500 mt-1">Stored in sessions.json across reboots</p>
-      </div>
-    </div>
-
-    <!-- Editorial Tab Switcher -->
-    <div class="flex items-center space-x-2 border-b border-surface-border pb-3 overflow-x-auto custom-scrollbar">
-      <button onclick="switchTab('flow')" id="tab-btn-flow" class="tab-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition flex items-center gap-2 bg-purple-600/20 text-purple-300 border border-purple-500/30">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Google Flow Creative Studio</span>
+  <!-- Minimal Nav Tabs -->
+  <div class="ui-border border-b">
+    <div class="max-w-6xl mx-auto px-6 flex items-center space-x-1">
+      <button onclick="switchTab('flow')" id="tab-btn-flow" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-indigo-500 text-indigo-500 transition flex items-center gap-2">
+        <i class="fa-solid fa-video"></i>
+        <span>Video Studio</span>
       </button>
-      <button onclick="switchTab('sessions')" id="tab-btn-sessions" class="tab-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-surface-card">
+      <button onclick="switchTab('sessions')" id="tab-btn-sessions" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-transparent ui-text-dim hover:text-indigo-500 transition flex items-center gap-2">
         <i class="fa-solid fa-users"></i>
-        <span>Session Manager</span>
+        <span>Sessions</span>
       </button>
-      <button onclick="switchTab('learner')" id="tab-btn-learner" class="tab-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-surface-card">
-        <i class="fa-solid fa-brain"></i>
-        <span>Autonomous Platform Explorer</span>
+      <button onclick="switchTab('learner')" id="tab-btn-learner" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-transparent ui-text-dim hover:text-indigo-500 transition flex items-center gap-2">
+        <i class="fa-solid fa-compass"></i>
+        <span>Explore Platform</span>
       </button>
-      <button onclick="switchTab('playground')" id="tab-btn-playground" class="tab-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-surface-card">
-        <i class="fa-solid fa-play"></i>
-        <span>3-Tier Routing Playground</span>
-      </button>
-      <button onclick="switchTab('routes')" id="tab-btn-routes" class="tab-btn px-5 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition flex items-center gap-2 text-slate-400 hover:text-white hover:bg-surface-card">
-        <i class="fa-solid fa-code"></i>
-        <span>Learned Routes &amp; Schemas</span>
+      <button onclick="switchTab('playground')" id="tab-btn-playground" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-transparent ui-text-dim hover:text-indigo-500 transition flex items-center gap-2">
+        <i class="fa-solid fa-bolt"></i>
+        <span>3-Tier Runner</span>
       </button>
     </div>
+  </div>
 
-    <!-- TAB 1: GOOGLE FLOW CREATIVE STUDIO & KEYFRAME INTERPOLATION -->
+  <!-- Main Content -->
+  <main class="max-w-6xl w-full mx-auto px-6 py-6 flex-1 space-y-6">
+
+    <!-- TAB 1: VIDEO STUDIO -->
     <div id="tab-flow" class="tab-content space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Generator Studio -->
-        <div class="lg:col-span-7 space-y-5">
-          <div class="glass-luxury rounded-3xl p-6 space-y-5">
-            <div class="flex items-center justify-between border-b border-surface-border pb-4">
+        <!-- Controls Column -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="ui-panel rounded-2xl p-5 space-y-4">
+            
+            <!-- Model & Quality -->
+            <div class="grid grid-cols-2 gap-3">
               <div>
-                <h2 class="text-base font-display font-bold text-white uppercase tracking-wide flex items-center gap-2">
-                  <i class="fa-solid fa-clapperboard text-cyan-400"></i>
-                  <span>Generative Video Architect</span>
-                </h2>
-                <p class="text-xs text-slate-400 mt-1">Condition videos via text, odd/even durations (4s-10s), or Keyframe Start/End Interpolation.</p>
-              </div>
-              <div class="text-right">
-                <span class="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase font-bold">
-                  Pre-Auth Ready
-                </span>
-              </div>
-            </div>
-
-            <!-- Model & Duration Matrix -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Generative Model</label>
-                <select id="flowModelSelect" onchange="updateDurationOptions()" class="mt-1.5 w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 font-mono">
-                  <option value="omni_flash" selected>Gemini Omni Flash (Rapid)</option>
-                  <option value="veo_3_1">Veo 3.1 (Cinematic 4K)</option>
-                  <option value="gemini_omni">Gemini Omni (Multimodal)</option>
-                  <option value="nano_banana">Nano Banana Pro (Prototype)</option>
+                <label class="text-[11px] font-mono uppercase tracking-wider ui-text-dim font-medium">Model</label>
+                <select id="modelSelect" onchange="onModelChange()" class="mt-1 w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
+                  <option value="omni_flash" selected>Gemini Omni Flash</option>
+                  <option value="veo_3_1">Google Veo 3.1</option>
+                  <option value="gemini_omni">Gemini Omni</option>
                 </select>
               </div>
-
               <div>
-                <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Clip Duration</label>
-                <select id="flowDurationSelect" class="mt-1.5 w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 font-mono">
-                  <option value="4">4 Seconds (Micro-Action)</option>
-                  <option value="6">6 Seconds (Dynamic Odd Pacing)</option>
-                  <option value="8" selected>8 Seconds (Standard Hero Shot)</option>
-                  <option value="10">10 Seconds (Full Dynamic Sequence)</option>
-                  <option value="30s_ad">30s Commercial (4-Scene Assembly)</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Download Quality</label>
-                <select id="flowQualitySelect" class="mt-1.5 w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 font-mono">
-                  <option value="1080p" selected>1080p Upscaled (Recommended)</option>
-                  <option value="720p">720p Native (Fastest)</option>
-                  <option value="4k">4K Ultra HD (Pro)</option>
+                <label class="text-[11px] font-mono uppercase tracking-wider ui-text-dim font-medium">Quality</label>
+                <select id="qualitySelect" class="mt-1 w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
+                  <option value="1080p" selected>1080p Upscaled</option>
+                  <option value="720p">720p Native</option>
+                  <option value="4k">4K Ultra HD</option>
                 </select>
               </div>
             </div>
 
-            <!-- Visual Keyframe Interpolation Deck (Start Frame -> End Frame) -->
-            <div class="p-4 rounded-2xl bg-surface-card border border-surface-border space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-cyan-400 font-bold">
-                  <i class="fa-solid fa-arrows-left-right mr-1"></i> Keyframe Interpolation (Start Frame &rarr; End Frame)
-                </span>
-                <span class="text-[10px] text-slate-500 font-mono">Optional Temporal Anchors</span>
+            <!-- Duration Pills -->
+            <div>
+              <label class="text-[11px] font-mono uppercase tracking-wider ui-text-dim font-medium">Duration</label>
+              <div id="durationPills" class="flex flex-wrap gap-2 mt-1.5">
+                <button type="button" onclick="setDuration('4')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">4s</button>
+                <button type="button" onclick="setDuration('6')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">6s</button>
+                <button type="button" onclick="setDuration('8')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-500 font-semibold">8s</button>
+                <button type="button" onclick="setDuration('10')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">10s</button>
+                <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">30s Ad (4-Scenes)</button>
               </div>
+              <input type="hidden" id="selectedDuration" value="8">
+            </div>
 
-              <div class="grid grid-cols-2 gap-3">
+            <!-- Keyframes (Collapsible) -->
+            <details class="ui-subpanel rounded-xl p-3 text-xs">
+              <summary class="cursor-pointer font-mono text-[11px] ui-text-dim select-none hover:text-indigo-500">
+                <i class="fa-solid fa-arrows-left-right mr-1.5"></i> Optional Keyframes (Start &amp; End Interpolation)
+              </summary>
+              <div class="grid grid-cols-2 gap-3 mt-3 pt-2 border-t ui-border">
                 <div>
-                  <label class="text-[10px] font-mono text-slate-400">First Frame (0.0s):</label>
-                  <input id="startingFrameInput" type="text" placeholder="@FirstFrame or Asset ID" class="mt-1 w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-200 font-mono placeholder-slate-600">
+                  <label class="text-[10px] font-mono ui-text-dim">Start Frame (0s):</label>
+                  <input id="startFrame" type="text" placeholder="@FirstFrame or Asset ID" class="mt-1 w-full ui-input rounded-lg px-2.5 py-1.5 text-xs font-mono">
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-slate-400">Last Frame (4s-10s):</label>
-                  <input id="endingFrameInput" type="text" placeholder="@LastFrame or Asset ID" class="mt-1 w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-200 font-mono placeholder-slate-600">
+                  <label class="text-[10px] font-mono ui-text-dim">End Frame (4s-10s):</label>
+                  <input id="endFrame" type="text" placeholder="@LastFrame or Asset ID" class="mt-1 w-full ui-input rounded-lg px-2.5 py-1.5 text-xs font-mono">
                 </div>
               </div>
-            </div>
+            </details>
 
-            <!-- Prompt Box with Helper Injectors -->
+            <!-- Prompt -->
             <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Prompt Architecture</label>
-                <span class="text-[10px] text-slate-500 font-mono">Click tags to inject</span>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-mono uppercase tracking-wider ui-text-dim font-medium">Prompt</label>
+                <div class="flex gap-1.5">
+                  <button type="button" onclick="appendTag('Cinematic 35mm lens, 4K ')" class="text-[10px] font-mono px-2 py-0.5 rounded ui-subpanel ui-text-dim hover:text-indigo-500">+ 35mm</button>
+                  <button type="button" onclick="appendTag('FPV drone push-in, volumetric lighting ')" class="text-[10px] font-mono px-2 py-0.5 rounded ui-subpanel ui-text-dim hover:text-indigo-500">+ FPV</button>
+                </div>
               </div>
-              <div class="flex flex-wrap gap-1.5 mb-2">
-                <button type="button" onclick="injectTag('@Character:LeadDev ')" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-surface-card hover:bg-surface-hover border border-surface-border text-purple-300">@Character</button>
-                <button type="button" onclick="injectTag('@Ingredient:CyberpunkNeon ')" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-surface-card hover:bg-surface-hover border border-surface-border text-cyan-300">@Ingredient</button>
-                <button type="button" onclick="injectTag('Cinematic 35mm lens, anamorphic lighting, shallow depth of field ')" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-surface-card hover:bg-surface-hover border border-surface-border text-emerald-300">35mm Lens</button>
-                <button type="button" onclick="injectTag('FPV drone push through volumetric cyan light rays ')" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-surface-card hover:bg-surface-hover border border-surface-border text-gold">FPV Push</button>
-              </div>
-              <textarea id="flowPromptInput" rows="3" class="w-full glass-input rounded-2xl p-3.5 text-xs text-slate-100 font-mono placeholder-slate-600" placeholder="Enter prompt...">A futuristic developer terminal displaying neon cyan data streams at sub-second speed. Smooth 35mm camera motion, volumetric reflections, 4K resolution.</textarea>
+              <textarea id="promptInput" rows="3" class="w-full ui-input rounded-xl p-3 text-xs font-mono placeholder:text-slate-500" placeholder="Describe the scene...">A futuristic developer terminal displaying neon cyan data streams at sub-second speed. Smooth 35mm camera motion, volumetric reflections, 4K resolution.</textarea>
             </div>
 
-            <!-- Custom Asset Name for Download -->
-            <div>
-              <label class="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 font-bold">Local File Naming Slug</label>
-              <input id="assetSlugInput" type="text" value="universal_web_mcp_launch" placeholder="e.g. hero_product_commercial" class="mt-1 w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-200 font-mono">
-              <p class="text-[10px] text-slate-500 font-mono mt-1">Saves as: <span id="previewFilename" class="text-slate-400">UniversalWeb_OmniFlash_8s_Prompt_universal_web_mcp_launch_timestamp.mp4</span></p>
-            </div>
-
-            <!-- Action Button -->
-            <button id="flowGenBtn" onclick="startFlowGeneration()" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition shadow-2xl shadow-purple-600/30 flex items-center justify-center gap-2">
-              <i class="fa-solid fa-clapperboard"></i>
-              <span>Generate Video &amp; Auto-Download to Disk</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Downloaded Media Vault with Live Renaming -->
-        <div class="lg:col-span-5 space-y-4">
-          <div class="glass-luxury rounded-3xl p-6 flex flex-col h-full min-h-[500px]">
-            <div class="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
-              <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-film text-cyan-400"></i>
-                <h3 class="text-sm font-display font-bold text-white uppercase tracking-wider">Local Media Vault</h3>
+            <!-- Custom Slug & Action -->
+            <div class="flex items-center gap-3 pt-1">
+              <div class="flex-1">
+                <input id="slugInput" type="text" value="universal_web_launch" placeholder="Video name slug" class="w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
               </div>
-              <button onclick="loadDownloads()" class="text-xs text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-rotate"></i>
+              <button id="genBtn" onclick="submitGeneration()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-play text-[10px]"></i>
+                <span>Generate Video</span>
               </button>
             </div>
 
-            <div id="downloadsListContainer" class="space-y-3 flex-1 overflow-auto custom-scrollbar max-h-[460px]">
-              <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+        <!-- Download Vault Column -->
+        <div class="lg:col-span-5">
+          <div class="ui-panel rounded-2xl p-5 flex flex-col h-full min-h-[420px]">
+            <div class="flex items-center justify-between border-b ui-border pb-3 mb-3">
+              <span class="text-xs font-mono uppercase tracking-wider font-semibold">Downloaded Videos</span>
+              <button onclick="loadDownloads()" class="ui-text-dim hover:text-indigo-500 transition text-xs">
+                <i class="fa-solid fa-rotate"></i>
+              </button>
+            </div>
+            <div id="downloadsList" class="space-y-2.5 flex-1 overflow-auto custom-scrollbar max-h-[380px]">
+              <!-- Dynamically populated -->
             </div>
           </div>
         </div>
@@ -422,294 +319,257 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- TAB 2: SESSION MANAGER (Survives Reboots) -->
-    <div id="tab-sessions" class="tab-content hidden space-y-6">
-      <div class="glass-luxury rounded-3xl p-6 space-y-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-border pb-4">
+    <!-- TAB 2: SESSIONS -->
+    <div id="tab-sessions" class="tab-content hidden space-y-4">
+      <div class="ui-panel rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between border-b ui-border pb-4">
           <div>
-            <h2 class="text-base font-display font-bold text-white uppercase tracking-wide flex items-center gap-2">
-              <i class="fa-solid fa-address-card text-purple-400"></i>
-              <span>Multi-Session Profile Vault</span>
-            </h2>
-            <p class="text-xs text-slate-400 mt-1">
-              All browser authentication sessions are permanently stored in <code class="text-purple-300 font-mono">sessions.json</code>. Login credentials survive machine reboots.
-            </p>
+            <h2 class="text-sm font-semibold tracking-tight">Connected Google Accounts</h2>
+            <p class="text-xs ui-text-dim mt-0.5">The active account is used for video generation and API requests. Saved permanently in sessions.json.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="openAddSessionModal()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-purple-600/20">
-              <i class="fa-solid fa-plus"></i>
-              <span>Add Session</span>
-            </button>
-            <button onclick="loadSessions()" class="text-xs bg-surface-card hover:bg-surface-hover border border-surface-border text-slate-300 px-3 py-2.5 rounded-xl transition">
-              <i class="fa-solid fa-rotate"></i>
-            </button>
-          </div>
+          <button onclick="startInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span>Add Account</span>
+          </button>
         </div>
 
-        <div id="sessionsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="sessionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <!-- Loaded dynamically -->
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: AUTONOMOUS PLATFORM EXPLORER -->
-    <div id="tab-learner" class="tab-content hidden space-y-6">
-      <div class="glass-luxury rounded-3xl p-6 space-y-6">
-        <div class="border-b border-surface-border pb-4">
-          <h2 class="text-base font-display font-bold text-white uppercase tracking-wide flex items-center gap-2">
-            <i class="fa-solid fa-brain text-cyan-400"></i>
-            <span>Autonomous Platform Skill Engine</span>
-          </h2>
-          <p class="text-xs text-slate-400 mt-1">
-            Provide ANY website URL. The AI agent crawls navigation, inputs, and background APIs to compile an operational Skill guide.
-          </p>
+    <!-- TAB 3: PLATFORM EXPLORER -->
+    <div id="tab-learner" class="tab-content hidden space-y-4">
+      <div class="ui-panel rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 class="text-sm font-semibold tracking-tight">Autonomous Platform Explorer</h2>
+          <p class="text-xs ui-text-dim mt-0.5">Discovers navigation, inputs, and APIs on any website and compiles a skill profile.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-          <div class="md:col-span-9">
-            <input id="learnerTargetUrl" type="url" value="https://flow.google.com/" placeholder="Enter website URL..." class="w-full glass-input rounded-2xl px-4 py-3.5 text-xs text-slate-100 font-mono">
-          </div>
-          <div class="md:col-span-3">
-            <button id="startLearnBtn" onclick="startPlatformLearning()" class="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20">
-              <i class="fa-solid fa-magnifying-glass-chart"></i>
-              <span>Explore &amp; Train Agent</span>
-            </button>
-          </div>
+        <div class="flex gap-2">
+          <input id="learnerUrl" type="url" value="https://flow.google.com/" placeholder="Enter URL..." class="flex-1 ui-input rounded-xl px-3.5 py-2.5 text-xs font-mono">
+          <button id="learnerBtn" onclick="runLearner()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2.5 rounded-xl transition whitespace-nowrap">
+            <span>Explore Platform</span>
+          </button>
         </div>
 
-        <div id="learnerProgressBox" class="p-6 rounded-2xl bg-surface-card border border-surface-border space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div id="learnerStatusDot" class="w-3 h-3 rounded-full bg-emerald-400"></div>
-              <span id="learnerStatusLabel" class="text-xs font-mono font-bold uppercase tracking-widest text-slate-200">Ready</span>
-            </div>
-            <span id="learnerPercent" class="text-xs font-mono font-bold text-cyan-400">100%</span>
+        <div id="learnerStatusBox" class="ui-subpanel rounded-xl p-4 text-xs font-mono space-y-2">
+          <div class="flex justify-between items-center">
+            <span id="learnerPhase" class="font-semibold text-emerald-500">Ready</span>
+            <span id="learnerPct" class="ui-text-dim">100%</span>
           </div>
-
-          <div class="w-full bg-obsidian rounded-full h-2 overflow-hidden border border-surface-border">
-            <div id="learnerProgressBar" class="bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 h-2 rounded-full transition-all duration-500" style="width: 100%"></div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="learnerBar" class="bg-indigo-500 h-1.5 transition-all duration-300" style="width: 100%"></div>
           </div>
-
-          <div id="learnerMessageBox" class="p-4 rounded-xl bg-obsidian/70 border border-surface-border flex items-start gap-3">
-            <i id="learnerMessageIcon" class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
-            <div>
-              <p id="learnerMessageText" class="text-xs text-slate-200 font-mono leading-relaxed">
-                Platform Skill for Google Flow is compiled and ready to automate.
-              </p>
-            </div>
-          </div>
+          <p id="learnerText" class="ui-text-dim text-[11px]">Platform skill compiled and ready.</p>
         </div>
       </div>
     </div>
 
-    <!-- TAB 4: 3-TIER PLAYGROUND -->
-    <div id="tab-playground" class="tab-content hidden space-y-6">
-      <div class="glass-luxury rounded-3xl p-6 space-y-5">
-        <h2 class="text-base font-display font-bold text-white uppercase tracking-wide flex items-center gap-2">
-          <i class="fa-solid fa-terminal text-purple-400"></i>
-          <span>3-Tier Hybrid Routing Playground</span>
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-          <div class="md:col-span-8">
-            <input id="targetUrl" type="url" value="https://jsonplaceholder.typicode.com/todos/1" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono">
-          </div>
-          <div class="md:col-span-4 flex items-center gap-2">
-            <select id="reqTier" class="w-full glass-input rounded-xl px-3 py-2.5 text-xs text-slate-100 font-mono">
-              <option value="1">Tier 1: Fast Path (&lt;200ms)</option>
-              <option value="2">Tier 2: CDP Sniffer</option>
-              <option value="3">Tier 3: DOM Fallback</option>
-            </select>
-            <button onclick="executeUniversalRequest()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition">Execute</button>
-          </div>
+    <!-- TAB 4: 3-TIER RUNNER -->
+    <div id="tab-playground" class="tab-content hidden space-y-4">
+      <div class="ui-panel rounded-2xl p-6 space-y-4">
+        <h2 class="text-sm font-semibold tracking-tight">3-Tier Hybrid Runner</h2>
+        <div class="flex gap-2">
+          <input id="runnerUrl" type="url" value="https://jsonplaceholder.typicode.com/todos/1" class="flex-1 ui-input rounded-xl px-3.5 py-2.5 text-xs font-mono">
+          <select id="runnerTier" class="ui-input rounded-xl px-3 py-2 text-xs font-mono">
+            <option value="1">Tier 1: Fast Path (&lt;200ms)</option>
+            <option value="2">Tier 2: CDP Sniffer</option>
+            <option value="3">Tier 3: DOM Fallback</option>
+          </select>
+          <button onclick="runRequest()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2.5 rounded-xl transition">Run</button>
         </div>
-        <pre id="resCodeBlock" class="p-4 rounded-xl bg-obsidian border border-surface-border text-xs font-mono text-slate-300 max-h-80 overflow-auto custom-scrollbar"><code>Run a request above to see payload.</code></pre>
-      </div>
-    </div>
-
-    <!-- TAB 5: LEARNED ROUTES -->
-    <div id="tab-routes" class="tab-content hidden space-y-6">
-      <div class="glass-luxury rounded-3xl p-6 space-y-4">
-        <h2 class="text-base font-display font-bold text-white uppercase tracking-wide flex items-center gap-2">
-          <i class="fa-solid fa-code text-cyan-400"></i>
-          <span>Discovered Routes in learned_routes.json</span>
-        </h2>
-        <div class="overflow-x-auto custom-scrollbar">
-          <table class="w-full text-left text-xs font-mono">
-            <thead>
-              <tr class="border-b border-surface-border text-slate-400">
-                <th class="py-2.5 px-3">Method</th>
-                <th class="py-2.5 px-3">URL</th>
-                <th class="py-2.5 px-3">Domain</th>
-                <th class="py-2.5 px-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody id="routesTableBody" class="divide-y divide-surface-border text-slate-300"></tbody>
-          </table>
-        </div>
+        <pre id="runnerOutput" class="p-3.5 rounded-xl ui-subpanel text-xs font-mono ui-text-muted max-h-72 overflow-auto custom-scrollbar"><code>Output will appear here.</code></pre>
       </div>
     </div>
 
   </main>
 
-  <!-- Rename File Modal -->
-  <div id="renameModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-luxury rounded-3xl max-w-md w-full p-6 space-y-4 border border-surface-border">
-      <div class="flex items-center justify-between border-b border-surface-border pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-pen-to-square text-cyan-400"></i>
-          <span>Rename Video Asset</span>
-        </h3>
-        <button onclick="closeRenameModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div>
-        <label class="text-[10px] font-mono uppercase text-slate-400">New Filename (.mp4):</label>
-        <input id="modalNewName" type="text" class="mt-1.5 w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-100 font-mono">
-        <input id="modalOldPath" type="hidden">
-      </div>
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-border">
-        <button onclick="closeRenameModal()" class="text-xs bg-surface-card text-slate-300 px-4 py-2 rounded-xl">Cancel</button>
-        <button onclick="submitRename()" class="text-xs bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl transition">Save Rename</button>
+  <!-- Inline Rename Modal -->
+  <div id="renameModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="ui-panel rounded-2xl max-w-sm w-full p-5 space-y-3">
+      <h3 class="text-xs font-semibold uppercase tracking-wider font-mono">Rename Video File</h3>
+      <input id="newFilenameInput" type="text" class="w-full ui-input rounded-lg px-3 py-2 text-xs font-mono">
+      <input id="oldFilepathInput" type="hidden">
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeRenameModal()" class="text-xs ui-text-dim px-3 py-1.5 rounded-lg">Cancel</button>
+        <button onclick="saveRename()" class="bg-indigo-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium">Save</button>
       </div>
     </div>
   </div>
 
   <script>
+    // Theme Management (Light / Dark)
+    function initTheme() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      if (saved === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-moon"></i>';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('themeToggleBtn').innerHTML = '<i class="fa-solid fa-sun"></i>';
+      }
+    }
+
+    // Tabs
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-purple-600/20', 'text-purple-300', 'border-purple-500/30');
-        btn.classList.add('text-slate-400');
+        btn.classList.remove('border-indigo-500', 'text-indigo-500');
+        btn.classList.add('border-transparent', 'ui-text-dim');
       });
 
       const target = document.getElementById('tab-' + tabId);
       const btn = document.getElementById('tab-btn-' + tabId);
       if (target) target.classList.remove('hidden');
       if (btn) {
-        btn.classList.remove('text-slate-400');
-        btn.classList.add('bg-purple-600/20', 'text-purple-300', 'border', 'border-purple-500/30');
+        btn.classList.remove('border-transparent', 'ui-text-dim');
+        btn.classList.add('border-indigo-500', 'text-indigo-500');
       }
 
       if (tabId === 'sessions') loadSessions();
-      if (tabId === 'routes') loadRoutes();
       if (tabId === 'flow') loadDownloads();
     }
 
-    function injectTag(tag) {
-      const textarea = document.getElementById('flowPromptInput');
-      textarea.value = textarea.value + ' ' + tag;
-      textarea.focus();
-    }
-
-    function updateDurationOptions() {
-      const model = document.getElementById('flowModelSelect').value;
-      const durSelect = document.getElementById('flowDurationSelect');
-      if (model.includes('veo')) {
-        durSelect.innerHTML = `
-          <option value="8" selected>8 Seconds (Veo 3.1 Cinematic Max)</option>
-          <option value="30s_ad">30s Commercial (4-Scene Assembly)</option>
+    // Model & Durations
+    function onModelChange() {
+      const m = document.getElementById('modelSelect').value;
+      const pills = document.getElementById('durationPills');
+      if (m.includes('veo')) {
+        pills.innerHTML = `
+          <button type="button" onclick="setDuration('8')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-500 font-semibold">8s (Veo Max)</button>
+          <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">30s Ad (4-Scenes)</button>
         `;
+        setDuration('8');
       } else {
-        durSelect.innerHTML = `
-          <option value="4">4 Seconds (Micro-Action - Omni)</option>
-          <option value="6">6 Seconds (Dynamic Odd Pacing - Omni)</option>
-          <option value="8" selected>8 Seconds (Standard - Omni)</option>
-          <option value="10">10 Seconds (Full Dynamic - Omni)</option>
-          <option value="30s_ad">30s Commercial (4-Scene Assembly)</option>
+        pills.innerHTML = `
+          <button type="button" onclick="setDuration('4')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">4s</button>
+          <button type="button" onclick="setDuration('6')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">6s</button>
+          <button type="button" onclick="setDuration('8')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-500 font-semibold">8s</button>
+          <button type="button" onclick="setDuration('10')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">10s</button>
+          <button type="button" onclick="setDuration('30s_ad')" class="dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border text-slate-300">30s Ad</button>
         `;
+        setDuration('8');
       }
     }
 
-    async function loadDownloads() {
+    function setDuration(dur) {
+      document.getElementById('selectedDuration').value = dur;
+      document.querySelectorAll('.dur-btn').forEach(b => {
+        b.className = 'dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border ui-subpanel ui-border ui-text-muted';
+      });
+      event.target.className = 'dur-btn px-3 py-1.5 rounded-lg text-xs font-mono border border-indigo-500 bg-indigo-500/10 text-indigo-500 font-semibold';
+    }
+
+    function appendTag(t) {
+      const area = document.getElementById('promptInput');
+      area.value = area.value + ' ' + t;
+      area.focus();
+    }
+
+    // Sessions Management
+    async function loadSessions() {
       try {
-        const res = await fetch('/api/flow/downloads');
-        const files = await res.json();
-        const container = document.getElementById('downloadsListContainer');
+        const res = await fetch('/api/sessions');
+        const data = await res.json();
+        const container = document.getElementById('sessionsGrid');
         container.innerHTML = '';
 
-        if (!files || files.length === 0) {
-          container.innerHTML = '<p class="text-xs text-slate-500 font-mono text-center py-8">No downloaded video files yet.</p>';
-          return;
-        }
+        const sessions = data.sessions || [];
+        let activeName = 'None';
 
-        files.forEach(f => {
-          const item = document.createElement('div');
-          item.className = 'p-3.5 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-between';
-          item.innerHTML = `
-            <div class="flex items-center space-x-3">
-              <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <i class="fa-solid fa-film"></i>
-              </div>
+        sessions.forEach(s => {
+          if (s.is_active) activeName = s.email || s.name;
+          const hasCookies = (s.cookie_count || 0) > 0;
+
+          const card = document.createElement('div');
+          card.className = `p-4 rounded-xl border transition ${s.is_active ? 'border-indigo-500/60 bg-indigo-500/5' : 'ui-subpanel ui-border'}`;
+          card.innerHTML = `
+            <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs font-bold text-slate-200 font-mono truncate max-w-[200px]" title="${f.name}">${f.name}</p>
-                <p class="text-[10px] text-slate-500 font-mono">${f.size_mb} MB &bull; ${f.modified}</p>
+                <p class="font-medium text-xs">${s.name}</p>
+                <p class="text-[11px] font-mono ui-text-dim mt-0.5">${s.email || 'No email'}</p>
               </div>
+              ${s.is_active ? '<span class="text-[9px] font-mono bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 px-2 py-0.5 rounded uppercase font-semibold">ACTIVE</span>' : ''}
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="openRenameModal('${f.path}', '${f.name}')" class="text-xs bg-surface-hover hover:bg-surface-border text-slate-300 px-2.5 py-1.5 rounded-lg font-mono transition" title="Rename Video">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <a href="/downloads/${f.name}" target="_blank" class="text-xs bg-surface-hover hover:bg-surface-border text-slate-300 px-2.5 py-1.5 rounded-lg font-mono transition" title="Play">
-                <i class="fa-solid fa-play"></i>
-              </a>
-              <a href="/downloads/${f.name}" download class="text-xs bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/30 px-2.5 py-1.5 rounded-lg font-mono transition" title="Download">
-                <i class="fa-solid fa-download"></i>
-              </a>
+
+            <div class="mt-3 flex items-center justify-between text-xs">
+              <span class="text-[10px] font-mono ${hasCookies ? 'text-emerald-500' : 'text-amber-500'}">
+                ${hasCookies ? `<i class="fa-solid fa-circle text-[6px] mr-1"></i>${s.cookie_count} cookies` : '<i class="fa-regular fa-circle text-[6px] mr-1"></i>No auth cookies'}
+              </span>
+
+              <div class="flex items-center gap-1.5">
+                ${!hasCookies ? `<button onclick="startInteractiveLogin('${s.email}')" class="text-[10px] font-mono bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/20">Log In</button>` : ''}
+                ${!s.is_active && hasCookies ? `<button onclick="selectSession('${s.id}')" class="text-[10px] font-mono bg-indigo-600/10 text-indigo-500 border border-indigo-500/30 px-2 py-1 rounded hover:bg-indigo-600/20">Set Active</button>` : ''}
+                <button onclick="removeSession('${s.id}')" class="text-[10px] ui-text-dim hover:text-rose-500 p-1"><i class="fa-regular fa-trash-can"></i></button>
+              </div>
             </div>
           `;
-          container.appendChild(item);
+          container.appendChild(card);
         });
+
+        document.getElementById('activeAccountName').innerText = activeName;
       } catch (e) {
-        console.error('Failed to load downloads:', e);
+        console.error(e);
       }
     }
 
-    function openRenameModal(path, name) {
-      document.getElementById('modalOldPath').value = path;
-      document.getElementById('modalNewName').value = name;
-      document.getElementById('renameModal').classList.remove('hidden');
+    async function selectSession(id) {
+      await fetch(`/api/sessions/${id}/select`, { method: 'POST' });
+      loadSessions();
     }
 
-    function closeRenameModal() {
-      document.getElementById('renameModal').classList.add('hidden');
+    async function removeSession(id) {
+      if (!confirm('Remove this session?')) return;
+      await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+      loadSessions();
     }
 
-    async function submitRename() {
-      const path = document.getElementById('modalOldPath').value;
-      const newName = document.getElementById('modalNewName').value.trim();
-      if (!newName) return alert('Please enter a valid filename.');
+    async function startInteractiveLogin(presetEmail) {
+      const email = prompt('Enter the Google account email to log into:', presetEmail || 'arq5158@gmail.com');
+      if (!email) return;
+
+      alert('Opening Chrome. Please log into ' + email + ' and open Google Flow. Your session will be saved permanently once authenticated.');
 
       try {
-        const res = await fetch('/api/flow/rename', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ current_path: path, new_name: newName })
-        });
+        const res = await fetch('/api/authenticate?target_url=' + encodeURIComponent('https://flow.google.com/') + '&expected_email=' + encodeURIComponent(email), { method: 'POST' });
         const data = await res.json();
-        if (data.status === 'success') {
-          closeRenameModal();
-          loadDownloads();
-        } else {
-          alert('Rename failed: ' + (data.message || 'Unknown error'));
-        }
+        alert(data.message || 'Login completed!');
+        loadSessions();
       } catch (e) {
-        alert('Rename error: ' + e);
+        alert('Login error: ' + e);
       }
     }
 
-    async function startFlowGeneration() {
-      const prompt = document.getElementById('flowPromptInput').value.trim();
-      const model = document.getElementById('flowModelSelect').value;
-      const duration = document.getElementById('flowDurationSelect').value;
-      const quality = document.getElementById('flowQualitySelect').value;
-      const startFrame = document.getElementById('startingFrameInput').value.trim();
-      const endFrame = document.getElementById('endingFrameInput').value.trim();
-      const slug = document.getElementById('assetSlugInput').value.trim();
+    // Video Generation
+    async function submitGeneration() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      const model = document.getElementById('modelSelect').value;
+      const duration = document.getElementById('selectedDuration').value;
+      const quality = document.getElementById('qualitySelect').value;
+      const startFrame = document.getElementById('startFrame').value.trim();
+      const endFrame = document.getElementById('endFrame').value.trim();
+      const slug = document.getElementById('slugInput').value.trim() || 'video';
 
-      if (!prompt) return alert('Please enter a prompt.');
+      if (!prompt) return alert('Please enter a prompt');
 
-      const btn = document.getElementById('flowGenBtn');
+      const btn = document.getElementById('genBtn');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Submitting to Google Flow...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Submitting...';
 
       try {
         const res = await fetch('/api/flow/generate', {
@@ -722,98 +582,135 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             download_quality: quality,
             starting_frame: startFrame || null,
             ending_frame: endFrame || null,
-            slug: slug || 'generated_clip'
+            slug
           })
         });
         const data = await res.json();
-        alert(data.message || 'Generation task submitted!');
+        alert(data.message || 'Generation submitted');
         loadDownloads();
       } catch (e) {
-        alert('Generation error: ' + e);
+        alert('Error: ' + e);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-clapperboard mr-2"></i> <span>Generate Video &amp; Auto-Download to Disk</span>';
+        btn.innerHTML = '<i class="fa-solid fa-play text-[10px]"></i> <span>Generate Video</span>';
       }
     }
 
-    async function loadSessions() {
+    // Download Vault & Inline Rename
+    async function loadDownloads() {
       try {
-        const res = await fetch('/api/sessions');
-        const data = await res.json();
-        const container = document.getElementById('sessionsListContainer');
+        const res = await fetch('/api/flow/downloads');
+        const files = await res.json();
+        const container = document.getElementById('downloadsList');
         container.innerHTML = '';
-        (data.sessions || []).forEach(s => {
-          const card = document.createElement('div');
-          card.className = `p-5 rounded-2xl border ${s.is_active ? 'bg-purple-950/20 border-purple-500/40 glow-violet' : 'bg-surface-card border-surface-border'}`;
-          card.innerHTML = `
-            <div class="flex items-start justify-between">
-              <div>
-                <h4 class="text-sm font-bold text-white">${s.name}</h4>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">${s.email || 'No email'}</p>
-              </div>
-              <span class="text-xs font-mono font-bold text-cyan-400">${s.cookie_count || 0} cookies</span>
+
+        if (!files || files.length === 0) {
+          container.innerHTML = '<p class="text-xs ui-text-dim font-mono text-center py-8">No downloaded video files yet.</p>';
+          return;
+        }
+
+        files.forEach(f => {
+          const item = document.createElement('div');
+          item.className = 'p-3 rounded-xl ui-subpanel border ui-border flex items-center justify-between';
+          item.innerHTML = `
+            <div class="truncate max-w-[220px]">
+              <p class="text-xs font-mono font-medium truncate" title="${f.name}">${f.name}</p>
+              <p class="text-[10px] font-mono ui-text-dim mt-0.5">${f.size_mb} MB &bull; ${f.modified}</p>
             </div>
-            <div class="mt-4 pt-3 border-t border-surface-border flex items-center justify-between text-xs">
-              <span class="text-[10px] text-slate-500 font-mono">Retained on disk</span>
-              ${!s.is_active ? `<button onclick="selectSession('${s.id}')" class="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 px-2.5 py-1 rounded-lg">Set Active</button>` : '<span class="text-[10px] text-emerald-400 font-bold uppercase font-mono">ACTIVE</span>'}
+            <div class="flex items-center gap-1.5">
+              <button onclick="openRename('${f.path}', '${f.name}')" class="p-1.5 rounded ui-text-dim hover:text-indigo-500 transition" title="Rename"><i class="fa-solid fa-pen text-xs"></i></button>
+              <a href="/downloads/${f.name}" target="_blank" class="p-1.5 rounded ui-text-dim hover:text-indigo-500 transition" title="Play"><i class="fa-solid fa-play text-xs"></i></a>
+              <a href="/downloads/${f.name}" download class="p-1.5 rounded text-indigo-500 hover:text-indigo-400 transition" title="Download"><i class="fa-solid fa-download text-xs"></i></a>
             </div>
           `;
-          container.appendChild(card);
+          container.appendChild(item);
         });
       } catch (e) {
         console.error(e);
       }
     }
 
-    async function selectSession(id) {
-      await fetch(`/api/sessions/${id}/select`, { method: 'POST' });
-      loadSessions();
+    function openRename(path, name) {
+      document.getElementById('oldFilepathInput').value = path;
+      document.getElementById('newFilenameInput').value = name;
+      document.getElementById('renameModal').classList.remove('hidden');
     }
 
-    async function startInteractiveAuth() {
-      const url = prompt('Enter Google Flow URL to authenticate:', 'https://flow.google.com/');
-      if (!url) return;
-      alert('Opening Chrome. Please log in; storage state will be permanently retained.');
-      try {
-        const res = await fetch('/api/authenticate?target_url=' + encodeURIComponent(url), { method: 'POST' });
-        const data = await res.json();
-        alert(data.message || 'Authentication complete!');
-        loadSessions();
-      } catch (e) {
-        alert('Auth error: ' + e);
+    function closeRenameModal() {
+      document.getElementById('renameModal').classList.add('hidden');
+    }
+
+    async function saveRename() {
+      const path = document.getElementById('oldFilepathInput').value;
+      const newName = document.getElementById('newFilenameInput').value.trim();
+      if (!newName) return;
+      const res = await fetch('/api/flow/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_path: path, new_name: newName })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        closeRenameModal();
+        loadDownloads();
+      } else {
+        alert(data.message || 'Error renaming');
       }
     }
 
-    async function executeUniversalRequest() {
-      const url = document.getElementById('targetUrl').value;
-      const tier = parseInt(document.getElementById('reqTier').value);
+    // Platform Explorer
+    async function runLearner() {
+      const url = document.getElementById('learnerUrl').value.trim();
+      if (!url) return;
+      const btn = document.getElementById('learnerBtn');
+      btn.disabled = true;
+      await fetch('/api/learn-platform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      pollLearner();
+    }
+
+    async function pollLearner() {
+      const res = await fetch('/api/learn-platform/status');
+      const s = await res.json();
+      document.getElementById('learnerPhase').innerText = s.state;
+      document.getElementById('learnerPct').innerText = (s.progress || 0) + '%';
+      document.getElementById('learnerBar').style.width = (s.progress || 0) + '%';
+      document.getElementById('learnerText').innerText = s.status_text || 'Exploring...';
+      if (s.state !== 'READY' && s.state !== 'ERROR') {
+        setTimeout(pollLearner, 1500);
+      } else {
+        document.getElementById('learnerBtn').disabled = false;
+      }
+    }
+
+    // 3-Tier Runner
+    async function runRequest() {
+      const url = document.getElementById('runnerUrl').value;
+      const tier = parseInt(document.getElementById('runnerTier').value);
       const res = await fetch('/api/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, method: 'GET', force_tier: tier })
       });
       const data = await res.json();
-      document.getElementById('resCodeBlock').querySelector('code').innerText = JSON.stringify(data, null, 2);
-    }
-
-    async function loadRoutes() {
-      const res = await fetch('/api/routes');
-      const routes = await res.json();
-      const tbody = document.getElementById('routesTableBody');
-      tbody.innerHTML = '';
-      routes.forEach(r => {
-        tbody.innerHTML += `<tr><td class="py-2 px-3 text-emerald-400 font-bold">${r.method}</td><td class="py-2 px-3 truncate max-w-xs">${r.url}</td><td class="py-2 px-3 text-slate-400">${r.domain}</td><td class="py-2 px-3 text-right"><span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono">Cached</span></td></tr>`;
-      });
+      document.getElementById('runnerOutput').querySelector('code').innerText = JSON.stringify(data, null, 2);
     }
 
     // Init
+    initTheme();
+    loadSessions();
     loadDownloads();
   </script>
 </body>
 </html>
 """
 
-# --- REST Endpoints ---
+# =====================================================================
+# REST API Endpoints
+# =====================================================================
 
 @web_app.get("/", response_class=HTMLResponse)
 async def get_dashboard():
@@ -822,13 +719,11 @@ async def get_dashboard():
 
 @web_app.get("/api/flow/credits")
 async def api_get_credits():
-    """Returns Google Flow credit allocations and cost schedule."""
     return {
         "status": "success",
         "account": "arq5020@gmail.com",
         "plan": "Google AI Pro Tier",
         "daily_credits": 50,
-        "daily_refresh_hours": 24,
         "monthly_pro_credits": 1000,
         "total_available_credits": 1050,
         "cost_schedule": {
@@ -845,14 +740,13 @@ async def api_get_credits():
 
 @web_app.post("/api/flow/generate")
 async def api_flow_generate(payload: Dict[str, Any], background_tasks: BackgroundTasks):
-    """Triggers generation with exact model, odd/even duration, keyframes, and naming."""
     prompt = payload.get("prompt", "")
     model = payload.get("model", "omni_flash")
     duration = payload.get("duration", "8")
     quality = payload.get("download_quality", "1080p")
     start_frame = payload.get("starting_frame")
     end_frame = payload.get("ending_frame")
-    slug = payload.get("slug", "generated_clip")
+    slug = payload.get("slug", "video")
 
     is_30s = (duration == "30s_ad")
     dur_num = 8 if is_30s else int(duration)
@@ -883,13 +777,12 @@ async def api_flow_generate(payload: Dict[str, Any], background_tasks: Backgroun
         "model": model,
         "duration": f"{dur_num}s" if not is_30s else "30s (4 scenes)",
         "download_quality": quality,
-        "message": f"Generation initiated with model '{model.upper()}' ({dur_num}s, quality={quality}). Check Media Vault shortly."
+        "message": f"Generation queued for model '{model.upper()}' ({dur_num}s, quality={quality}). Check download vault shortly."
     }
 
 
 @web_app.post("/api/flow/rename")
 async def api_rename_video(payload: Dict[str, Any]):
-    """Renames any downloaded video file locally."""
     path = payload.get("current_path")
     new_name = payload.get("new_name")
     if not path or not new_name:
@@ -932,13 +825,31 @@ async def api_select_session(session_id: str):
     return {"status": "success", "active_session": rec}
 
 
+@web_app.delete("/api/sessions/{session_id}")
+async def api_delete_session(session_id: str):
+    ok = session_manager.remove_session(session_id)
+    return {"status": "success" if ok else "not_found"}
+
+
 @web_app.post("/api/authenticate")
-async def api_authenticate(target_url: str = "https://flow.google.com/"):
+async def api_authenticate(target_url: str = "https://flow.google.com/", expected_email: Optional[str] = None):
     try:
-        res = await run_interactive_login(target_url=target_url)
+        res = await run_interactive_login(target_url=target_url, expected_email=expected_email)
         return JSONResponse(content=res)
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
+@web_app.post("/api/learn-platform")
+async def api_learn_platform(payload: Dict[str, Any], background_tasks: BackgroundTasks):
+    url = payload.get("url", "https://flow.google.com/")
+    background_tasks.add_task(platform_learner.learn_platform, url)
+    return {"status": "started", "url": url}
+
+
+@web_app.get("/api/learn-platform/status")
+async def api_learn_platform_status():
+    return platform_learner.get_status()
 
 
 @web_app.post("/api/request")
@@ -957,7 +868,7 @@ async def api_get_routes(domain: Optional[str] = None):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     print("=======================================================")
-    print("Universal-Web-MCP Awwwards Studio is running!")
+    print("Universal-Web-MCP Minimal Studio is running!")
     print(f"Dashboard: http://localhost:{port}")
     print("=======================================================")
     uvicorn.run("app:web_app", host="0.0.0.0", port=port, reload=False)
