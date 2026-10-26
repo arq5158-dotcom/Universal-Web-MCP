@@ -113,7 +113,8 @@ web_app.add_middleware(
 async def local_only_guard(request: Request, call_next):
     """Block other websites from driving the app through your browser (CSRF / DNS rebinding)."""
     host = (request.headers.get("host") or "").rsplit(":", 1)[0].strip("[]")
-    if HOST in LOCAL_HOSTS and host and host not in LOCAL_HOSTS:
+    # Always enforced, even when bound to 0.0.0.0 (the Docker image), so DNS rebinding can't reach the app.
+    if host and host not in LOCAL_HOSTS:
         return JSONResponse(status_code=403, content={"detail": "Ashzo MCP only answers on localhost."})
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         origin = request.headers.get("origin")

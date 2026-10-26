@@ -34,9 +34,48 @@ No icon? `START_ASHZO.bat` (Windows) or `python launch_ashzo.py` does the same t
 
 AI agents working in this repo are told (in [AGENTS.md](AGENTS.md), `CLAUDE.md` and the Cursor/Antigravity rules) to create the icon on a new computer and tell you where it is.
 
+### Run with Docker (any OS, no Python setup)
+
+You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) or Docker Engine (Linux). Then, in this folder:
+
+```bash
+docker compose up -d --build
+```
+
+The first build takes a few minutes (it downloads Chromium). After that:
+
+- **Dashboard:** http://localhost:8000
+- **Ashzo Browser:** http://localhost:6080/vnc.html. This is the browser the agent works in. Open it once to sign in to Google (for Flow). It is a live view of the browser running inside the container.
+- **Your data** (sign-ins, settings, downloads) is kept in the Docker volume `ashzo-data`, so it survives restarts and rebuilds. Your downloaded videos are in there too.
+
+Useful commands:
+
+```bash
+docker compose logs -f ashzo      # server output
+docker compose down               # stop (keeps your data)
+docker compose down -v            # stop and delete all saved data
+```
+
+Ports are bound to `127.0.0.1`, so only this computer can reach them. To protect the noVNC view with a password, create a `.env` file next to `docker-compose.yml` containing `VNC_PASSWORD=your-password`, then run `docker compose up -d`.
+
+**Connect an AI app to the container:** use `docker exec` instead of a local Python path. The MCP server runs inside the container and sends its events to the dashboard:
+
+```json
+{
+  "mcpServers": {
+    "ashzo-mcp": {
+      "command": "docker",
+      "args": ["exec", "-i", "-e", "ASHZO_DASHBOARD_URL=http://127.0.0.1:8000", "ashzo-mcp", "python", "server.py"]
+    }
+  }
+}
+```
+
+Limits of the container: Google may ask for extra checks when you sign in from a container, and Flow's pages can change, as they can with the native install. Sign-in and Flow work are not verified in every setup.
+
 ### Connect it to your AI app
 
-Add the server to your MCP config (Claude Desktop: `claude_desktop_config.json`; Cursor: `.cursor/mcp.json`). Use the full paths on your computer:
+Add the server to your MCP config (Claude Desktop: `claude_desktop_config.json`; Cursor: `.cursor/mcp.json`). Use the full paths on your computer (this is the native install; for Docker, use the `docker exec` config above):
 
 ```json
 {

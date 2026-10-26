@@ -1,0 +1,34 @@
+# Keep the image small and keep personal sessions, cookies and downloads out of it.
+.git
+.gitignore
+.gitattributes
+.venv
+venv
+ENV
+node_modules
+__pycache__
+**/__pycache__
+*.pyc
+.agent
+.cursor
+docs
+scripts
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Your local state (sessions, cookies, settings, generated files). Stored in the /data volume instead.
+downloads
+saved_sessions
+logs
+.ashzo_browser
+sessions.json
+session_cookies.json
+flow_auth_state.json
+learned_routes.json
+ashzo_settings.json
+
+# Stray screenshots at the top level (web/ and assets/ images are kept).
+*.png
+!web/**/*.png
+!assets/*.png

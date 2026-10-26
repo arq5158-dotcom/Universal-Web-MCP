@@ -1,0 +1,23 @@
+# Run Ashzo MCP in a container:  docker compose up -d --build
+# Dashboard:        http://localhost:8000
+# Ashzo Browser:    http://localhost:6080/vnc.html   (watch it, sign in to Google)
+# Ports are bound to this computer only (127.0.0.1).
+services:
+  ashzo:
+    build: .
+    image: ashzo-mcp:latest
+    container_name: ashzo-mcp
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:6080:6080"
+    volumes:
+      - ashzo-data:/data
+    shm_size: "1gb"  # Chromium needs more shared memory than Docker's 64 MB default
+    environment:
+      # Optional: set a password for the noVNC view (put VNC_PASSWORD=... in a .env file next to this file).
+      - VNC_PASSWORD=${VNC_PASSWORD:-}
+
+volumes:
+  ashzo-data:
