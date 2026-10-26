@@ -11,6 +11,8 @@ ENV/
 # Sensitive user session data & local caches
 session_cookies.json
 flow_auth_state.json
+sessions.json
+saved_sessions/
 downloads/
 *.png
 *.sqlite

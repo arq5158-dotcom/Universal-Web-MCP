@@ -33,7 +33,7 @@
     "sample_response": {
       "required": false
     },
-    "discovered_at": "296682.203",
+    "discovered_at": "301162.734",
     "status_code": 200
   },
   "POST:ogads-pa.clients6.google.com/$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData": {
@@ -75,7 +75,7 @@
         null
       ]
     },
-    "discovered_at": "296683.109",
+    "discovered_at": "301163.437",
     "status_code": 200
   }
 }

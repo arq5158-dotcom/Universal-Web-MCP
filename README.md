@@ -51,10 +51,13 @@ Instead of slow, fragile visual browser automation (like clicking coordinates or
 ## 🚀 Key Features
 
 - ⚡ **Sub-Second Speed:** Learned endpoints bypass browser rendering entirely, achieving 100-200ms response times.
-- 🍪 **Chrome Profile & Cookie Synchronization:** Pre-authenticates requests using your local Google Chrome profile (auto-detects profiles by email, e.g., `arq5020@gmail.com` -> `Profile 1`), bypassing bot detection and login walls.
+- 🍪 **Persistent Multi-Session Profile Manager:** Stores login profiles permanently in `sessions.json`. Sessions survive server restarts and machine reboots with complete Add, Remove, and Active Profile switching.
+- 🧠 **Autonomous Platform Skill Engine:** Explores ANY website, discovers navigation routes, interactive inputs, and first-party APIs, and generates operational `<domain>_SKILL.md` profiles with live dashboard progress.
+- 🎨 **Google Flow AI Creative Studio:** Deeply researched knowledge base ([GOOGLE_FLOW_SKILL.md](GOOGLE_FLOW_SKILL.md)) for Google Veo (8s max, 4K photorealism) vs Omni 1.1 Flash (10s max), Agent Mode vs Direct Mode, `@` references, and automated 30s ad storyboards.
 - 🛡️ **Noise & Ad Filtering:** Intelligently filters out tracking beacons, analytics (`google-analytics`, `doubleclick`, `datadog`, `sentry`, etc.), and static assets.
 - 🪙 **Strict Token Efficiency (< 1,000 tokens):** Summarizes massive payloads and strips DOM bloat (`<script>`, `<style>`, `<svg>`, tracking pixels) to keep LLM context clean and affordable.
 - 🔒 **Security First:** Automatically masks sensitive authorization tokens and cookies in logs and state files.
+- 💎 **Awwwards-Inspired Luxury Dashboard:** Real-time dark obsidian UI (`http://localhost:8000`) with live 3-tier testing playground, session switcher, autonomous platform explorer, and media download vault.
 
 ---
 

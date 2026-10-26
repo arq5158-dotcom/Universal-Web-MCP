@@ -1,0 +1,929 @@
+{
+  "domain": "httpbin.org",
+  "url": "https://httpbin.org",
+  "title": "httpbin.org",
+  "learned_at": "2026-10-26 15:30:48",
+  "navigation_routes": [
+    {
+      "text": "HTTP Methods",
+      "href": "https://httpbin.org/#/HTTP%20Methods"
+    },
+    {
+      "text": "Auth",
+      "href": "https://httpbin.org/#/Auth"
+    },
+    {
+      "text": "Status codes",
+      "href": "https://httpbin.org/#/Status%20codes"
+    },
+    {
+      "text": "Request inspection",
+      "href": "https://httpbin.org/#/Request%20inspection"
+    },
+    {
+      "text": "Response inspection",
+      "href": "https://httpbin.org/#/Response%20inspection"
+    },
+    {
+      "text": "Response formats",
+      "href": "https://httpbin.org/#/Response%20formats"
+    },
+    {
+      "text": "Dynamic data",
+      "href": "https://httpbin.org/#/Dynamic%20data"
+    },
+    {
+      "text": "Cookies",
+      "href": "https://httpbin.org/#/Cookies"
+    },
+    {
+      "text": "Images",
+      "href": "https://httpbin.org/#/Images"
+    },
+    {
+      "text": "Redirects",
+      "href": "https://httpbin.org/#/Redirects"
+    },
+    {
+      "text": "Anything",
+      "href": "https://httpbin.org/#/Anything"
+    },
+    {
+      "text": "HTML form",
+      "href": "https://httpbin.org/forms/post"
+    }
+  ],
+  "interactive_inputs": [],
+  "controls_and_buttons": [],
+  "intercepted_apis": [
+    {
+      "url": "https://httpbin.org/spec.json",
+      "method": "GET",
+      "status": 200,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "basePath": {
+            "type": "string",
+            "example": "/"
+          },
+          "definitions": {
+            "type": "object",
+            "properties": {}
+          },
+          "host": {
+            "type": "string",
+            "example": "httpbin.org"
+          },
+          "info": {
+            "type": "object",
+            "properties": {
+              "contact": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "me@kennethreitz.org"
+                  },
+                  "responsibleDeveloper": {
+                    "type": "string",
+                    "example": "Kenneth Reitz"
+                  },
+                  "responsibleOrganization": {
+                    "type": "string",
+                    "example": "Kenneth Reitz"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "https://kennethreitz.org"
+                  }
+                }
+              },
+              "description": {
+                "type": "string",
+                "example": "A simple HTTP Request & Response Service"
+              },
+              "title": {
+                "type": "string",
+                "example": "httpbin.org"
+              },
+              "version": {
+                "type": "string",
+                "example": "0.9.2"
+              }
+            }
+          },
+          "paths": {
+            "type": "object",
+            "properties": {
+              "/absolute-redirect/{n}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/anything": {
+                "type": "object",
+                "properties": {
+                  "delete": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "patch": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "post": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "put": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "trace": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/anything/{anything}": {
+                "type": "object",
+                "properties": {
+                  "delete": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "patch": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "post": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "put": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "trace": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/base64/{value}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/basic-auth/{user}/{passwd}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/bearer": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/brotli": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/bytes/{n}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cache": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cache/{value}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cookies": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cookies/delete": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cookies/set": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/cookies/set/{name}/{value}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/deflate": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/delay/{delay}": {
+                "type": "object",
+                "properties": {
+                  "delete": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "patch": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "post": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "put": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  },
+                  "trace": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/delete": {
+                "type": "object",
+                "properties": {
+                  "delete": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/deny": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/digest-auth/{qop}/{user}/{passwd}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              },
+              "/digest-auth/{qop}/{user}/{passwd}/{algorithm}": {
+                "type": "object",
+                "properties": {
+                  "get": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "..."
+                      },
+                      "produces": {
+                        "type": "..."
+                      },
+                      "responses": {
+                        "type": "..."
+                      },
+                      "summary": {
+                        "type": "..."
+                      },
+                      "tags": {
+                        "type": "..."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "protocol": {
+            "type": "string",
+            "example": "https"
+          },
+          "schemes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "https"
+            },
+            "sample_length": 1
+          },
+          "swagger": {
+            "type": "string",
+            "example": "2.0"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "example": "Testing different HTTP verbs"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "HTTP Methods"
+                }
+              }
+            },
+            "sample_length": 11
+          }
+        }
+      },
+      "sample": {
+        "basePath": "/",
+        "definitions": {},
+        "host": "httpbin.org",
+        "info": {
+          "contact": "...",
+          "description": "...",
+          "title": "...",
+          "version": "..."
+        },
+        "paths": {
+          "/absolute-redirect/{n}": "...",
+          "/anything": "...",
+          "/anything/{anything}": "...",
+          "/base64/{value}": "...",
+          "/basic-auth/{user}/{passwd}": "..."
+        },
+        "protocol": "https",
+        "schemes": "List[1 items]",
+        "swagger": "2.0",
+        "tags": "List[11 items]"
+      }
+    }
+  ]
+}
