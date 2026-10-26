@@ -178,9 +178,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <i class="fa-solid fa-moon"></i>
         </button>
 
-        <button onclick="startInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-2">
+        <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-1.5 rounded-lg transition shadow-sm flex items-center gap-2">
           <i class="fa-solid fa-plus text-[10px]"></i>
-          <span>Login Account</span>
+          <span>Connect Account</span>
         </button>
       </div>
     </div>
@@ -334,10 +334,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="ui-panel rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b ui-border pb-4">
           <div>
-            <h2 class="text-sm font-semibold tracking-tight">Connected Google Accounts</h2>
-            <p class="text-xs ui-text-dim mt-0.5">The active account is used for video generation and API requests. Saved permanently in sessions.json.</p>
+            <h2 class="text-sm font-semibold tracking-tight">Connected Accounts &amp; Sessions</h2>
+            <p class="text-xs ui-text-dim mt-0.5">Active account is used for Fast Path requests and platform automation. Saved permanently in sessions.json.</p>
           </div>
-          <button onclick="startInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm flex items-center gap-2">
+          <button onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-2 rounded-xl transition shadow-sm flex items-center gap-2">
             <i class="fa-solid fa-plus text-[10px]"></i>
             <span>Add Account</span>
           </button>
@@ -405,6 +405,51 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeRenameModal()" class="text-xs ui-text-dim px-3 py-1.5 rounded-lg">Cancel</button>
         <button onclick="saveRename()" class="bg-indigo-600 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Connect Account Modal -->
+  <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="ui-panel rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b ui-border pb-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider font-mono">Connect Account to Ashzo MCP</h3>
+        <button onclick="closeLoginModal()" class="ui-text-dim hover:text-indigo-500"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-[10px] font-mono uppercase tracking-wider ui-text-dim font-medium">Platform / Service</label>
+          <select id="loginPlatformSelect" onchange="onPlatformPresetChange()" class="mt-1 w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
+            <option value="https://accounts.google.com/">Google (accounts.google.com)</option>
+            <option value="https://github.com/login">GitHub (github.com)</option>
+            <option value="https://twitter.com/i/flow/login">Twitter / X</option>
+            <option value="https://flow.google.com/">Google Flow (flow.google.com)</option>
+            <option value="custom">Custom Platform URL</option>
+          </select>
+        </div>
+
+        <div id="customUrlDiv" class="hidden">
+          <label class="text-[10px] font-mono uppercase tracking-wider ui-text-dim font-medium">Custom Website URL</label>
+          <input id="loginCustomUrl" type="url" placeholder="https://example.com/login" class="mt-1 w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
+        </div>
+
+        <div>
+          <label class="text-[10px] font-mono uppercase tracking-wider ui-text-dim font-medium">Account Email / Label</label>
+          <input id="loginEmailInput" type="text" placeholder="e.g. arq5158@gmail.com" class="mt-1 w-full ui-input rounded-xl px-3 py-2 text-xs font-mono">
+        </div>
+
+        <div id="loginStatusIndicator" class="hidden p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[11px] font-mono text-indigo-400 flex items-center gap-2">
+          <i class="fa-solid fa-spinner animate-spin"></i>
+          <span>Chrome is launching. Please log into your account in the window...</span>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t ui-border">
+        <button onclick="closeLoginModal()" class="text-xs ui-text-dim px-3.5 py-2 rounded-xl">Cancel</button>
+        <button id="launchLoginBtn" onclick="executeInteractiveLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-xl transition">
+          Launch Chrome
+        </button>
       </div>
     </div>
   </div>
@@ -523,7 +568,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               </span>
 
               <div class="flex items-center gap-1.5">
-                ${!hasCookies ? `<button onclick="startInteractiveLogin('${s.email}')" class="text-[10px] font-mono bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/20">Log In</button>` : ''}
+                ${!hasCookies ? `<button onclick="openLoginModal('${s.email}', '${s.domain ? 'https://' + s.domain : ''}')" class="text-[10px] font-mono bg-amber-500/10 text-amber-500 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/20">Log In</button>` : ''}
                 ${!s.is_active && hasCookies ? `<button onclick="selectSession('${s.id}')" class="text-[10px] font-mono bg-indigo-600/10 text-indigo-500 border border-indigo-500/30 px-2 py-1 rounded hover:bg-indigo-600/20">Set Active</button>` : ''}
                 <button onclick="removeSession('${s.id}')" class="text-[10px] ui-text-dim hover:text-rose-500 p-1"><i class="fa-regular fa-trash-can"></i></button>
               </div>
@@ -549,19 +594,64 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       loadSessions();
     }
 
-    async function startInteractiveLogin(presetEmail) {
-      const email = prompt('Enter the Google account email to log into:', presetEmail || 'arq5158@gmail.com');
-      if (!email) return;
+    function openLoginModal(presetEmail, presetUrl) {
+      if (presetEmail) document.getElementById('loginEmailInput').value = presetEmail;
+      if (presetUrl) {
+        const select = document.getElementById('loginPlatformSelect');
+        let matched = false;
+        for (let i = 0; i < select.options.length; i++) {
+          if (presetUrl.includes(select.options[i].value) || select.options[i].value.includes(presetUrl)) {
+            select.selectedIndex = i;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          select.value = 'custom';
+          document.getElementById('customUrlDiv').classList.remove('hidden');
+          document.getElementById('loginCustomUrl').value = presetUrl;
+        }
+      }
+      document.getElementById('loginStatusIndicator').classList.add('hidden');
+      document.getElementById('launchLoginBtn').disabled = false;
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
 
-      alert('Opening Chrome. Please log into ' + email + ' and open Google Flow. Your session will be saved permanently once authenticated.');
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function onPlatformPresetChange() {
+      const val = document.getElementById('loginPlatformSelect').value;
+      if (val === 'custom') {
+        document.getElementById('customUrlDiv').classList.remove('hidden');
+      } else {
+        document.getElementById('customUrlDiv').classList.add('hidden');
+      }
+    }
+
+    async function executeInteractiveLogin() {
+      const preset = document.getElementById('loginPlatformSelect').value;
+      const customUrl = document.getElementById('loginCustomUrl').value.trim();
+      const targetUrl = (preset === 'custom' ? customUrl : preset) || 'https://accounts.google.com/';
+      const email = document.getElementById('loginEmailInput').value.trim();
+
+      const btn = document.getElementById('launchLoginBtn');
+      const indicator = document.getElementById('loginStatusIndicator');
+      btn.disabled = true;
+      indicator.classList.remove('hidden');
 
       try {
-        const res = await fetch('/api/authenticate?target_url=' + encodeURIComponent('https://flow.google.com/') + '&expected_email=' + encodeURIComponent(email), { method: 'POST' });
+        const res = await fetch('/api/authenticate?target_url=' + encodeURIComponent(targetUrl) + (email ? '&expected_email=' + encodeURIComponent(email) : ''), { method: 'POST' });
         const data = await res.json();
+        closeLoginModal();
         alert(data.message || 'Login completed!');
         loadSessions();
       } catch (e) {
         alert('Login error: ' + e);
+      } finally {
+        btn.disabled = false;
+        indicator.classList.add('hidden');
       }
     }
 
