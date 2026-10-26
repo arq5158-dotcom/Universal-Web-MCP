@@ -45,7 +45,7 @@ DOWNLOADS_DIR = BASE_DIR / "downloads"
 DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 web_app = FastAPI(
-    title="Universal-Web-MCP Minimal Studio",
+    title="Ashzo MCP Minimal Studio",
     description="Sub-second 3-Tier Hybrid Routing & Autonomous Creative Studio",
     version="4.0.0"
 )
@@ -71,7 +71,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universal-Web-MCP | Minimal Studio</title>
+  <title>Ashzo MCP | Minimal Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -154,11 +154,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     <div class="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm font-mono font-bold text-sm">
-          UW
+          A
         </div>
         <div>
           <span class="font-semibold text-sm tracking-tight flex items-center gap-2">
-            Universal-Web-MCP
+            Ashzo MCP
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 font-medium">FastMCP</span>
           </span>
         </div>
@@ -171,12 +171,6 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span class="ui-text-dim">Active:</span>
           <span id="activeAccountName" class="font-medium text-indigo-500">None</span>
-        </div>
-
-        <!-- Credits Badge -->
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ui-subpanel text-xs font-mono">
-          <span class="ui-text-dim">Credits:</span>
-          <span class="text-emerald-500 font-semibold" title="50 Daily + 1,000 Monthly">1,050</span>
         </div>
 
         <!-- Light / Dark Theme Toggle Button -->
@@ -197,7 +191,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     <div class="max-w-6xl mx-auto px-6 flex items-center space-x-1">
       <button onclick="switchTab('flow')" id="tab-btn-flow" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-indigo-500 text-indigo-500 transition flex items-center gap-2">
         <i class="fa-solid fa-video"></i>
-        <span>Video Studio</span>
+        <span>Google Flow</span>
       </button>
       <button onclick="switchTab('sessions')" id="tab-btn-sessions" class="tab-btn py-3 px-4 text-xs font-medium border-b-2 border-transparent ui-text-dim hover:text-indigo-500 transition flex items-center gap-2">
         <i class="fa-solid fa-users"></i>
@@ -224,6 +218,22 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <!-- Controls Column -->
         <div class="lg:col-span-7 space-y-4">
           <div class="ui-panel rounded-2xl p-5 space-y-4">
+
+            <!-- Flow Header with Dedicated Credits HUD -->
+            <div class="flex items-center justify-between border-b ui-border pb-3">
+              <div>
+                <h2 class="text-sm font-semibold tracking-tight">Google Flow Studio</h2>
+                <p class="text-[11px] ui-text-dim">Gemini Omni Flash (4s-10s) &amp; Veo 3.1 video generation</p>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-mono">
+                <span class="px-2.5 py-1 rounded-lg ui-subpanel border ui-border text-emerald-500 font-medium" title="50 Daily Credits">
+                  <i class="fa-solid fa-sun mr-1 text-[10px]"></i>50 Daily
+                </span>
+                <span class="px-2.5 py-1 rounded-lg ui-subpanel border ui-border text-indigo-500 font-medium" title="1,000 Monthly Pro Credits">
+                  <i class="fa-solid fa-gem mr-1 text-[10px]"></i>1,000 Pro
+                </span>
+              </div>
+            </div>
             
             <!-- Model & Quality -->
             <div class="grid grid-cols-2 gap-3">

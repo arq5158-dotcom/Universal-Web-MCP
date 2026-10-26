@@ -1,11 +1,11 @@
-# Universal-Web-MCP 🌐⚡
+# Ashzo MCP 🌐⚡
 
 [![Model Context Protocol](https://img.shields.io/badge/MCP-2.0-blue.svg)](https://modelcontextprotocol.io/)
 [![Playwright](https://img.shields.io/badge/Playwright-Chromium-green.svg)](https://playwright.dev/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A production-ready Python Model Context Protocol (MCP) server named **Universal-Web-MCP** (Bridge: `Universal-Web-Bridge`) that empowers AI agents (like **Claude Desktop**, **Cursor**, **Windsurf**, or **OpenAI Agent SDK**) to interact with **ANY** website at sub-second speeds.
+A production-ready Python Model Context Protocol (MCP) server named **Ashzo MCP** (FastMCP Bridge: `Universal-Web-Bridge`) that empowers AI agents (like **Claude Desktop**, **Cursor**, **Windsurf**, or **OpenAI Agent SDK**) to interact with **ANY** website at sub-second speeds.
 
 Instead of slow, fragile visual browser automation (like clicking coordinates or parsing massive DOM trees), Universal-Web-MCP utilizes an intelligent **3-Tier Hybrid Routing Architecture**.
 
