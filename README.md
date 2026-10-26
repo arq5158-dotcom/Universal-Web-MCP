@@ -124,6 +124,19 @@ Add `Universal-Web-MCP` to your `claude_desktop_config.json`:
 
 ---
 
+## 🎬 Google Flow AI Video Automation Pipeline
+
+Universal-Web-MCP includes an automated batch video production engine for **Google Flow** (supporting **Google Veo** and **Omni 1.1 Flash** models).
+
+- 📦 **Batch Generation (10–20 Videos):** Pass a list of concepts, and the engine breaks each 30s video into 4 scenes, submits prompts, and polls rendering.
+- 🎯 **Strict Model Enforcement:** Adheres strictly to the requested model:
+  - `model="veo"`: 8-second cinematic photorealism with 35mm lens camera instructions.
+  - `model="omni_flash"`: 10-second rapid high-throughput generation.
+- 💾 **Automatic Local Downloading:** Intercepts download streams and saves `.mp4` files directly to `downloads/flow_production/<video_title>/`.
+- 📖 **Full Guide & Documentation:** See [GOOGLE_FLOW_AUTOMATION_GUIDE.md](GOOGLE_FLOW_AUTOMATION_GUIDE.md) for full prompting formulas and batch scripts.
+
+---
+
 ## 🧪 Testing
 
 Run the comprehensive automated test suite (includes a live test on `https://flow.google.com/`):

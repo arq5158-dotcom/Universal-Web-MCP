@@ -1,0 +1,33 @@
+{
+  "title": "Universal-Web-MCP: 30-Second Commercial Ad",
+  "product": "Universal-Web-MCP (Python 3-Tier Web Bridge)",
+  "duration_seconds": 30,
+  "style": "Fast-paced tech commercial, cyberpunk neon accents, 4K crisp visual style",
+  "flow_prompt": "Cinematic 4K hyperrealistic commercial showcasing a futuristic AI terminal breaking through slow browser lag. High-speed digital particles transforming into instant glowing JSON data streams. Neon blue and emerald green lighting, sleek developer workstation, robotic AI hand streaming code at light speed.",
+  "scenes": [
+    {
+      "timecode": "00:00 - 00:07",
+      "visual": "Extreme close-up of a frustrated developer staring at a computer screen showing slow visual browser automation loading spinners (10,000ms delay). Red warning text 'TimeoutError: Button not found'. Glitch effect.",
+      "voiceover": "Still waiting 10 seconds for AI browser automation to click a single button?",
+      "on_screen_text": "SLOW BROWSER AUTOMATION IS DEAD."
+    },
+    {
+      "timecode": "00:07 - 00:16",
+      "visual": "Camera zooms violently into the CPU microchips. Data particles ignite into emerald laser beams. Replaying direct JSON and GraphQL network streams in sub-150ms.",
+      "voiceover": "Stop clicking pixels. Meet Universal-Web-MCP: the 3-tier hybrid routing bridge that replays learned APIs in under 200 milliseconds.",
+      "on_screen_text": "TIER 1: SUB-200MS FAST PATH REPLAY"
+    },
+    {
+      "timecode": "00:16 - 00:23",
+      "visual": "Dynamic split-screen showing automated Chrome DevTools Protocol network sniffer extracting schemas on the fly, with active session cookies pre-authenticated.",
+      "voiceover": "Auto-discovers hidden endpoints, syncs your Chrome session, and guarantees clean context under 1,000 tokens for Claude and Cursor.",
+      "on_screen_text": "CDP AUTO-DISCOVERY • PRE-AUTHENTICATED SESSIONS"
+    },
+    {
+      "timecode": "00:23 - 00:30",
+      "visual": "A futuristic holographic GitHub repository interface glowing with the name 'arq5158-dotcom/Universal-Web-MCP'. The developer smiles as requests execute instantaneously.",
+      "voiceover": "Universal-Web-MCP. The fastest web bridge ever built. Star and clone it on GitHub today.",
+      "on_screen_text": "GITHUB: arq5158-dotcom/Universal-Web-MCP\nSTART BUILDING AT LIGHT SPEED"
+    }
+  ]
+}
