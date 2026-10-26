@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 from typing import Dict, List, Any, Optional
+from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from pydantic import BaseModel, Field
 from playwright.async_api import async_playwright, Response, Page
