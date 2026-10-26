@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "universal-web-mcp": {
+      "command": "c:\\Users\\creat\\Documents\\antigravity\\quirky-pasteur\\Universal-Web-MCP\\.venv\\Scripts\\python.exe",
+      "args": [
+        "c:\\Users\\creat\\Documents\\antigravity\\quirky-pasteur\\Universal-Web-MCP\\server.py"
+      ]
+    }
+  }
+}
