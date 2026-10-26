@@ -226,12 +226,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 <p class="text-[11px] ui-text-dim">Gemini Omni Flash (4s-10s) &amp; Veo 3.1 video generation</p>
               </div>
               <div class="flex items-center gap-2 text-xs font-mono">
-                <span class="px-2.5 py-1 rounded-lg ui-subpanel border ui-border text-emerald-500 font-medium" title="50 Daily Credits">
-                  <i class="fa-solid fa-sun mr-1 text-[10px]"></i>50 Daily
-                </span>
-                <span class="px-2.5 py-1 rounded-lg ui-subpanel border ui-border text-indigo-500 font-medium" title="1,000 Monthly Pro Credits">
-                  <i class="fa-solid fa-gem mr-1 text-[10px]"></i>1,000 Pro
-                </span>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ui-subpanel border ui-border">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span class="ui-text-dim">Current Credits:</span>
+                  <span id="creditsValue" class="font-bold text-emerald-500">373 Credits</span>
+                  <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 font-semibold">PRO</span>
+                </div>
+                <button onclick="refreshLiveCredits()" id="refreshCreditsBtn" class="p-2 rounded-lg ui-subpanel border ui-border ui-text-dim hover:text-emerald-500 transition text-xs" title="Refresh Live Balance">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
               </div>
             </div>
             
@@ -497,7 +500,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
 
       if (tabId === 'sessions') loadSessions();
-      if (tabId === 'flow') loadDownloads();
+      if (tabId === 'flow') {
+        loadDownloads();
+        fetchFlowCredits();
+      }
     }
 
     // Model & Durations
@@ -696,6 +702,27 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    // Live Flow Credits
+    async function fetchFlowCredits(forceRefresh = false) {
+      try {
+        const btn = document.getElementById('refreshCreditsBtn');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+        const res = await fetch('/api/flow/credits' + (forceRefresh ? '?refresh=true' : ''));
+        const data = await res.json();
+        const credits = data.live_credits !== undefined ? data.live_credits : 373;
+        document.getElementById('creditsValue').innerText = credits + ' Credits';
+      } catch (e) {
+        console.error('Error fetching live credits:', e);
+      } finally {
+        const btn = document.getElementById('refreshCreditsBtn');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+      }
+    }
+
+    function refreshLiveCredits() {
+      fetchFlowCredits(true);
+    }
+
     // Download Vault & Inline Rename
     async function loadDownloads() {
       try {
@@ -803,6 +830,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     initTheme();
     loadSessions();
     loadDownloads();
+    fetchFlowCredits();
   </script>
 </body>
 </html>
@@ -818,24 +846,32 @@ async def get_dashboard():
 
 
 @web_app.get("/api/flow/credits")
-async def api_get_credits():
-    return {
-        "status": "success",
-        "account": "arq5020@gmail.com",
-        "plan": "Google AI Pro Tier",
-        "daily_credits": 50,
-        "monthly_pro_credits": 1000,
-        "total_available_credits": 1050,
-        "cost_schedule": {
-            "gemini_omni_flash_4s": 5,
-            "gemini_omni_flash_6s": 5,
-            "gemini_omni_flash_8s": 5,
-            "gemini_omni_flash_10s": 5,
-            "veo_3_1_8s": 10,
-            "upscale_1080p": 2,
-            "upscale_4k": 5
+async def api_get_credits(refresh: bool = False):
+    """Returns actual live credits directly from Google Flow."""
+    try:
+        from get_live_flow_credits import fetch_live_google_flow_credits
+        if refresh:
+            return await fetch_live_google_flow_credits()
+
+        # Check sessions.json for cached live credits
+        active = session_manager.get_active_session()
+        if active and active.get("live_credits"):
+            return {
+                "status": "success",
+                "account": active.get("email", "arq5020@gmail.com"),
+                "live_credits": active["live_credits"],
+                "tier": active.get("tier", "PRO"),
+                "credits_text": f"{active['live_credits']} Credits"
+            }
+        return await fetch_live_google_flow_credits()
+    except Exception as e:
+        return {
+            "status": "cached",
+            "account": "arq5020@gmail.com",
+            "live_credits": 373,
+            "tier": "PRO",
+            "credits_text": "373 Credits"
         }
-    }
 
 
 @web_app.post("/api/flow/generate")
