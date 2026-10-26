@@ -113,8 +113,9 @@ function Register-ClaudeCode {
     if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
         return 'Claude Code: not installed, skipped.'
     }
-    & claude mcp remove ashzo-mcp -s user *> $null
-    & claude mcp add -s user ashzo-mcp -- docker @dockerArgs *> $null
+    # Through cmd: PowerShell drops the "--" before claude's own arguments, which breaks "docker exec -i".
+    & cmd /c claude mcp remove ashzo-mcp -s user *> $null
+    & cmd /c claude mcp add -s user ashzo-mcp -- docker @dockerArgs *> $null
     if ($LASTEXITCODE -ne 0) { return 'Claude Code: could not register. Run it yourself: claude mcp add -s user ashzo-mcp -- docker exec -i ashzo-mcp python server.py' }
     return 'Claude Code: registered. Start a new Claude Code session to use it.'
 }
