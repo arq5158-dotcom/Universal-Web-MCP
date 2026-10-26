@@ -1,0 +1,81 @@
+{
+  "GET:www.gstatic.com/glue/cookienotificationbar/config/2a.json": {
+    "id": "GET:www.gstatic.com/glue/cookienotificationbar/config/2a.json",
+    "domain": "www.gstatic.com",
+    "url": "https://www.gstatic.com/glue/cookienotificationbar/config/2a.json",
+    "method": "GET",
+    "query_params": {
+      "hl": "en"
+    },
+    "headers": {
+      "sec-ch-ua-full-version-list": "\"Not:A-Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"156.0.8078.4\", \"HeadlessChrome\";v=\"156.0.8078.4\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://flow.google.com/",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"8\", \"Chromium\";v=\"156\", \"HeadlessChrome\";v=\"156\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"156.0.8078.4\"",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"10.0\""
+    },
+    "response_schema": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sample_response": {
+      "required": false
+    },
+    "discovered_at": "296682.203",
+    "status_code": 200
+  },
+  "POST:ogads-pa.clients6.google.com/$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData": {
+    "id": "POST:ogads-pa.clients6.google.com/$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData",
+    "domain": "ogads-pa.clients6.google.com",
+    "url": "https://ogads-pa.clients6.google.com/$rpc/google.internal.onegoogle.asyncdata.v1.AsyncDataService/GetAsyncData",
+    "method": "POST",
+    "query_params": {},
+    "headers": {
+      "sec-ch-ua-full-version-list": "\"Not:A-Brand\";v=\"8.0.0.0\", \"Chromium\";v=\"156.0.8078.4\", \"HeadlessChrome\";v=\"156.0.8078.4\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "x-user-agent": "grpc-web-javascript/0.1",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"8\", \"Chromium\";v=\"156\", \"HeadlessChrome\";v=\"156\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-form-factors": "\"Desktop\"",
+      "sec-ch-ua-wow64": "?0",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-full-version": "\"156.0.8078.4\"",
+      "content-type": "application/json+protobuf",
+      "referer": "https://flow.google.com/",
+      "x-goog-api-key": "AIza...KG_E",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      "sec-ch-ua-platform-version": "\"10.0\""
+    },
+    "response_schema": {
+      "type": "array",
+      "items": {
+        "type": "null"
+      },
+      "sample_length": 11
+    },
+    "sample_response": {
+      "_summary": "List of 11 items (showing first 3)",
+      "sample": [
+        null,
+        null,
+        null
+      ]
+    },
+    "discovered_at": "296683.109",
+    "status_code": 200
+  }
+}
