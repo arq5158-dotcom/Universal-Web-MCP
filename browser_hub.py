@@ -73,6 +73,35 @@ def find_chrome() -> Optional[str]:
     return None
 
 
+def _clear_stale_profile_lock() -> None:
+    """Remove Chrome's profile lock when the process named in it is gone (Linux/macOS).
+
+    A killed or crashed Chrome leaves SingletonLock behind. In a container Chrome then
+    refuses to start ("profile in use by another computer"), even on the same hostname.
+    """
+    if platform.system() == "Windows":  # Chrome uses a mutex there, and os.kill(pid, 0) would terminate the process
+        return
+    lock = PROFILE_DIR / "SingletonLock"
+    try:
+        host, _, pid = os.readlink(lock).rpartition("-")  # "<hostname>-<pid>"
+    except OSError:
+        return
+    if host == platform.node() and pid.isdigit():
+        try:
+            os.kill(int(pid), 0)
+            cmdline_file = Path(f"/proc/{pid}/cmdline")  # a reused PID may belong to some other program
+            if not cmdline_file.exists() or b"chrom" in cmdline_file.read_bytes():
+                return  # a real Chrome still holds the profile
+        except OSError:
+            pass
+    for name in ("SingletonLock", "SingletonCookie", "SingletonSocket"):
+        try:
+            (PROFILE_DIR / name).unlink()
+        except OSError:
+            pass
+    logger.info("Removed a stale Chrome profile lock (%s)", lock)
+
+
 def _raise_window(title: str, window_class: str = "Chrome_WidgetWin_1") -> bool:
     """Windows only: bring the window whose title starts with `title` to the front.
 
@@ -184,6 +213,7 @@ class BrowserHub:
             )
         self.executable = exe
         PROFILE_DIR.mkdir(parents=True, exist_ok=True)
+        _clear_stale_profile_lock()
         args = [
             exe,
             f"--remote-debugging-port={self.port}",
