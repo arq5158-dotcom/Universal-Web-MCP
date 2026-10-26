@@ -8,11 +8,13 @@ Enforces strict token limits (< 1,000 tokens) to prevent LLM context bloat.
 import re
 import logging
 from typing import Dict, Any, Optional
+from pathlib import Path
 from bs4 import BeautifulSoup
 import html2text
 from playwright.async_api import Page, async_playwright
 
 logger = logging.getLogger("UniversalWebMCP.Fallback")
+AUTH_STATE_FILE = Path(__file__).resolve().parent / "flow_auth_state.json"
 
 # Target token budget: ~1000 tokens =~ 3500-4000 characters
 MAX_OUTPUT_CHARS = 3800
@@ -160,10 +162,13 @@ class FallbackDOMReader:
                     headless=self.headless,
                     args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
                 )
-                context = await browser.new_context(
-                    viewport={"width": 1280, "height": 800},
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-                )
+                context_kwargs = {
+                    "viewport": {"width": 1280, "height": 800},
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+                }
+                if AUTH_STATE_FILE.exists():
+                    context_kwargs["storage_state"] = str(AUTH_STATE_FILE)
+                context = await browser.new_context(**context_kwargs)
 
             page = await context.new_page()
 

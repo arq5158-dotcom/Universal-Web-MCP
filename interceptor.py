@@ -43,6 +43,8 @@ NOISE_PATTERNS = [
 ]
 
 
+AUTH_STATE_FILE = Path(__file__).resolve().parent / "flow_auth_state.json"
+
 class LearnedRoute(BaseModel):
     """Structured representation of a learned API endpoint."""
     id: str
@@ -181,10 +183,15 @@ class NetworkInterceptor:
                         "--disable-dev-shm-usage"
                     ]
                 )
-                context = await browser.new_context(
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-                    viewport={"width": 1280, "height": 800}
-                )
+                context_kwargs = {
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                    "viewport": {"width": 1280, "height": 800}
+                }
+                if AUTH_STATE_FILE.exists():
+                    context_kwargs["storage_state"] = str(AUTH_STATE_FILE)
+                    logger.info(f"Loaded persistent storage state from {AUTH_STATE_FILE}")
+
+                context = await browser.new_context(**context_kwargs)
 
             page = await context.new_page()
 

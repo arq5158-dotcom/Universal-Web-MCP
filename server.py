@@ -28,6 +28,7 @@ except (ImportError, ModuleNotFoundError):
 from cookie_sync import ChromeProfileManager, mask_headers, mask_secret
 from interceptor import NetworkInterceptor, LearnedRoute, infer_json_schema, summarize_payload
 from fallback import FallbackDOMReader
+from auth_flow import run_interactive_login
 
 # Configure Logging
 logging.basicConfig(
@@ -132,6 +133,26 @@ route_cache = RouteCache(ROUTES_CACHE_FILE)
 
 
 # --- MCP Tools ---
+
+@mcp.tool()
+async def authenticate_session(
+    target_url: str = "https://flow.google.com/",
+    timeout_seconds: int = 120
+) -> Dict[str, Any]:
+    """
+    Launches an interactive Google Chrome window to log into Google / Flow once.
+    Captures full session storage state and cookies, making Universal-Web-MCP
+    permanently pre-authenticated for all subsequent background requests.
+
+    Args:
+        target_url: The URL to log into (default: https://flow.google.com/).
+        timeout_seconds: Maximum seconds to wait for user login (default: 120).
+    """
+    res = await run_interactive_login(target_url=target_url, timeout_seconds=timeout_seconds)
+    # Reload cookies into manager
+    cookie_manager.load_stored_cookies()
+    return res
+
 
 @mcp.tool()
 async def universal_request(

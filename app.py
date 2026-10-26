@@ -101,6 +101,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         </div>
       </div>
       <div class="flex items-center space-x-3">
+        <button onclick="startInteractiveAuth()" class="text-xs bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg flex items-center gap-2 transition shadow">
+          <i class="fa-solid fa-key"></i>
+          <span>1-Click Google Login</span>
+        </button>
         <button onclick="syncCookies()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-2 transition">
           <i class="fa-brands fa-chrome text-amber-400"></i>
           <span>Sync Chrome (arq5020)</span>
@@ -285,6 +289,18 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       }
     }
 
+    async function startInteractiveAuth() {
+      alert("Launching interactive Google Login window. Please sign in with arq5020@gmail.com in the Chrome window that opens. The MCP will automatically capture your session!");
+      try {
+        const res = await fetch('/api/authenticate', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || "Authentication complete!");
+        loadRoutes();
+      } catch (err) {
+        alert("Authentication error: " + err);
+      }
+    }
+
     async function syncCookies() {
       try {
         const res = await fetch('/api/sync-cookies');
@@ -359,6 +375,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+@web_app.post("/api/authenticate")
+async def api_authenticate(target_url: str = "https://flow.google.com/"):
+    """Launches visible Chrome window for one-time Google Login and session capture."""
+    from auth_flow import run_interactive_login
+    return await run_interactive_login(target_url=target_url)
+
 
 # Web UI Routes
 @web_app.get("/", response_class=HTMLResponse)
