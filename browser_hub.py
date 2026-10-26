@@ -73,6 +73,65 @@ def find_chrome() -> Optional[str]:
     return None
 
 
+def _raise_window(title: str, window_class: str = "Chrome_WidgetWin_1") -> bool:
+    """Windows only: bring the window whose title starts with `title` to the front.
+
+    Playwright's bring_to_front only activates the tab. Windows blocks a background
+    process from taking focus, so this attaches to the foreground thread first.
+    """
+    if platform.system() != "Windows" or not title:
+        return False
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    user32.GetForegroundWindow.restype = wintypes.HWND
+    user32.SetForegroundWindow.argtypes = [wintypes.HWND]
+    user32.BringWindowToTop.argtypes = [wintypes.HWND]
+    user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+    user32.IsWindowVisible.argtypes = [wintypes.HWND]
+    user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.c_void_p]
+    user32.AttachThreadInput.argtypes = [wintypes.DWORD, wintypes.DWORD, wintypes.BOOL]
+    user32.GetWindowTextLengthW.argtypes = [wintypes.HWND]
+    user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+    user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+    enum_proc_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    user32.EnumWindows.argtypes = [enum_proc_type, wintypes.LPARAM]
+
+    found: list = []
+
+    def visit(hwnd, _):
+        if not user32.IsWindowVisible(hwnd):
+            return True
+        length = user32.GetWindowTextLengthW(hwnd)
+        text = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, text, length + 1)
+        cls = ctypes.create_unicode_buffer(256)
+        user32.GetClassNameW(hwnd, cls, 256)
+        if cls.value == window_class and text.value.startswith(title):
+            found.append(hwnd)
+            return False  # stop at the first match
+        return True
+
+    user32.EnumWindows(enum_proc_type(visit), 0)
+    if not found:
+        return False
+    hwnd = found[0]
+    fg = user32.GetForegroundWindow()
+    fg_thread = user32.GetWindowThreadProcessId(fg, None)
+    this_thread = kernel32.GetCurrentThreadId()
+    attached = bool(fg_thread) and fg_thread != this_thread and user32.AttachThreadInput(this_thread, fg_thread, True)
+    try:
+        user32.ShowWindow(hwnd, 9)  # SW_RESTORE: also un-minimises it
+        user32.BringWindowToTop(hwnd)
+        user32.SetForegroundWindow(hwnd)
+    finally:
+        if attached:
+            user32.AttachThreadInput(this_thread, fg_thread, False)
+    return user32.GetForegroundWindow() == hwnd
+
+
 class BrowserHub:
     def __init__(self) -> None:
         self._pw = None
@@ -208,8 +267,13 @@ class BrowserHub:
                 pages = [p for p in ctx.pages if not p.is_closed()]
                 page = pages[-1] if pages else await ctx.new_page()
             await page.bring_to_front()
+            if platform.system() == "Windows":
+                # Playwright only switches the tab; this raises the actual Chrome window on the desktop.
+                title = await page.title()
+                if not await asyncio.to_thread(_raise_window, title):
+                    logger.warning("Could not bring the Ashzo Browser window to front (title %r)", title)
         except Exception as e:
-            logger.debug("bring_to_front: %s", e)
+            logger.warning("bring_to_front: %s", e)
 
     async def current_page(self):
         if not self.is_connected():
