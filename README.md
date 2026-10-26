@@ -36,7 +36,11 @@ AI agents working in this repo are told (in [AGENTS.md](AGENTS.md), `CLAUDE.md` 
 
 ### Run with Docker (any OS, no Python setup)
 
-You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) or Docker Engine (Linux). Then, in this folder:
+You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) or Docker Engine (Linux).
+
+**Windows, no commands:** double-click **`CREATE_DOCKER_ICON.bat`** once. It builds the app and puts an **Ashzo MCP (Docker)** icon on your desktop. From then on, double-click that icon: it starts Docker Desktop if needed, starts the app and opens the dashboard.
+
+**Or from a terminal**, in this folder:
 
 ```bash
 docker compose up -d --build

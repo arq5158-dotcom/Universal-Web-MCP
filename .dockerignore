@@ -16,6 +16,8 @@ scripts
 Dockerfile
 docker-compose.yml
 .dockerignore
+*.bat
+docker/*.ps1
 
 # Your local state (sessions, cookies, settings, generated files). Stored in the /data volume instead.
 downloads
