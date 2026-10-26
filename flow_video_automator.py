@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from playwright.async_api import async_playwright
+from live_events import live_broadcaster
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] [%(levelname)s] %(message)s")
 logger = logging.getLogger("FlowAutomator")
@@ -244,6 +245,12 @@ class FlowVideoAutomator:
 
         results = []
         logger.info(f"Starting batch production for {len(video_concepts)} item(s) with model '{model.upper()}' ({duration_per_clip}s)")
+        await live_broadcaster.broadcast(
+            "progress",
+            f"Initializing {model.upper()} ({duration_per_clip}s, {download_quality})...",
+            stage="initializing",
+            progress=15
+        )
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -256,6 +263,12 @@ class FlowVideoAutomator:
             page = await context.new_page()
 
             logger.info(f"Navigating to Flow workspace: {self.project_url}")
+            await live_broadcaster.broadcast(
+                "log",
+                f"Connecting to Google Flow studio at {self.project_url[:40]}...",
+                stage="initializing",
+                progress=25
+            )
             await page.goto(self.project_url, wait_until="domcontentloaded", timeout=30000)
             await page.wait_for_timeout(4000)
 
@@ -271,6 +284,12 @@ class FlowVideoAutomator:
                 video_folder.mkdir(parents=True, exist_ok=True)
 
                 logger.info(f"\n--- [Video {idx}/{len(video_concepts)}] {concept_title} ({custom_dur}s) ---")
+                await live_broadcaster.broadcast(
+                    "log",
+                    f"Compiling prompt kit for {concept_title} ({custom_dur}s)...",
+                    stage="submitting",
+                    progress=35
+                )
                 
                 # Check if multi-scene storyboard or single clip
                 if item.get("is_30s_ad"):
@@ -304,6 +323,13 @@ class FlowVideoAutomator:
                     if scene.ending_frame:
                         full_prompt = f"{full_prompt} @LastFrame:{scene.ending_frame}"
 
+                    await live_broadcaster.broadcast(
+                        "log",
+                        f"Injected prompt into ProseMirror editor: {full_prompt[:65]}...",
+                        stage="submitting",
+                        progress=45
+                    )
+
                     # Type into Flow ProseMirror prompt box
                     prompt_input = page.locator("div.ProseMirror[aria-label='What do you want to create?']").first
                     await prompt_input.click()
@@ -315,6 +341,12 @@ class FlowVideoAutomator:
                     send_btn = page.locator("button:has-text('arrow_forward')").first
                     await send_btn.click()
                     logger.info("Prompt sent. Polling for generation completion...")
+                    await live_broadcaster.broadcast(
+                        "progress",
+                        f"Rendering frames with {model.upper()} ({scene.duration_seconds}s)...",
+                        stage="rendering",
+                        progress=65
+                    )
 
                     # Wait for render to finalize
                     await page.wait_for_timeout(15000)
@@ -333,6 +365,13 @@ class FlowVideoAutomator:
                             quality_btn = page.locator(f"[role='menuitem']:has-text('{download_quality}'), button:has-text('{download_quality}')").first
                             if await quality_btn.count() == 0:
                                 quality_btn = page.locator("[role='menuitem']:has-text('Original size'), button:has-text('720p')").first
+
+                            await live_broadcaster.broadcast(
+                                "progress",
+                                f"Downloading {download_quality} MP4 to vault...",
+                                stage="downloading",
+                                progress=85
+                            )
 
                             async with page.expect_download(timeout=30000) as download_info:
                                 await quality_btn.click()
@@ -353,6 +392,15 @@ class FlowVideoAutomator:
                             video_record["downloaded_file"] = str(target_file)
                             video_record["formatted_filename"] = formatted_name
                             video_record["file_size_mb"] = file_size_mb
+
+                            # Broadcast video_ready event so dashboard auto-updates instantly
+                            await live_broadcaster.broadcast(
+                                "video_ready",
+                                f"Video ready: {formatted_name} ({file_size_mb} MB)",
+                                data={"filename": formatted_name, "size_mb": file_size_mb, "path": str(target_file)},
+                                stage="ready",
+                                progress=100
+                            )
 
                 # Save metadata
                 meta_path = video_folder / "metadata.json"

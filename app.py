@@ -23,10 +23,11 @@ from typing import Optional, Dict, Any, List
 from pathlib import Path
 
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from live_events import live_broadcaster
 
 from server import (
     mcp,
@@ -487,6 +488,37 @@ DASHBOARD_HTML = """<!DOCTYPE html>
               </div>
             </div>
 
+            <!-- Real-Time Live Agent Pipeline HUD & Terminal Feed -->
+            <div class="ashzo-card-sub rounded-xl p-3 border ashzo-border space-y-2" id="agentLiveHud">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full volt-dot" id="liveAgentDot"></span>
+                  <span class="text-xs font-mono font-medium" id="liveAgentStage">Agent Standby</span>
+                  <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" id="liveAgentBadge">IDLE</span>
+                </div>
+                <button type="button" onclick="toggleAgentFeed()" class="text-[10px] font-mono ashzo-text-dim hover:text-indigo-400 flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-terminal text-[9px]"></i>
+                  <span id="feedToggleText">Live Feed</span>
+                  <i class="fa-solid fa-chevron-down text-[8px] transition-transform duration-200" id="feedChevron"></i>
+                </button>
+              </div>
+
+              <!-- Animated Progress Bar -->
+              <div class="w-full bg-black/40 rounded-full h-1 overflow-hidden" id="liveProgressContainer">
+                <div id="liveProgressBar" class="h-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-300" style="width: 0%"></div>
+              </div>
+
+              <!-- Real-time Agent Status Line -->
+              <p id="liveStatusText" class="text-[10px] font-mono ashzo-text-dim truncate">Standby · Real-time pipeline active.</p>
+
+              <!-- Collapsible Live Agent Terminal -->
+              <div id="agentTerminalFeed" class="hidden mt-2 pt-2 border-t ashzo-border">
+                <div id="terminalLogs" class="max-h-28 overflow-y-auto custom-scrollbar font-mono text-[10px] space-y-1 text-slate-400">
+                  <div class="text-[9px] ashzo-text-dim font-mono">[System] Real-time agent event stream connected.</div>
+                </div>
+              </div>
+            </div>
+
             <!-- Custom Animated Dropdowns: Model & Quality -->
             <div class="grid grid-cols-2 gap-3">
               
@@ -698,6 +730,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     </div>
 
   </main>
+
+  <!-- Real-Time Toast Notification Stream -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- Inline Rename Modal with Spring Animation -->
   <div id="renameModal" class="modal-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
@@ -1114,7 +1149,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const endFrame = document.getElementById('endFrame').value.trim();
       const slug = document.getElementById('slugInput').value.trim() || 'video';
 
-      if (!prompt) return alert('Please enter a prompt');
+      if (!prompt) return showToastNotification('Please enter a prompt', 'error');
 
       const btn = document.getElementById('genBtn');
       btn.disabled = true;
@@ -1135,14 +1170,136 @@ DASHBOARD_HTML = """<!DOCTYPE html>
           })
         });
         const data = await res.json();
-        alert(data.message || 'Generation submitted');
-        loadDownloads();
+        showToastNotification(data.message || 'Generation initiated! Real-time progress streaming below.', 'info');
       } catch (e) {
-        alert('Error: ' + e);
+        showToastNotification('Error: ' + e, 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-play text-[9px]"></i> <span>Generate Video</span>';
       }
+    }
+
+    // -------------------------------------------------------------
+    // Real-Time Agent Stream & Auto-Updating HUD
+    // -------------------------------------------------------------
+    let liveEventSource = null;
+
+    function initLiveStream() {
+      if (liveEventSource) liveEventSource.close();
+      liveEventSource = new EventSource('/api/live/stream');
+
+      liveEventSource.onmessage = (e) => {
+        try {
+          const evt = JSON.parse(e.data);
+          handleLiveEvent(evt);
+        } catch (err) {
+          console.error('SSE parse error:', err);
+        }
+      };
+
+      liveEventSource.onerror = () => {
+        setTimeout(initLiveStream, 3000);
+      };
+    }
+
+    function handleLiveEvent(evt) {
+      if (evt.type === 'init') {
+        const initData = evt.data || {};
+        if (initData.active_job) updateAgentHud(initData.active_job);
+        if (initData.recent_logs) initData.recent_logs.forEach(appendTerminalLog);
+        return;
+      }
+
+      if (evt.stage || evt.progress !== undefined) {
+        updateAgentHud(evt);
+      }
+
+      if (evt.message) {
+        appendTerminalLog(evt);
+      }
+
+      // Auto-update download vault & live credits when video finishes (Zero page refresh!)
+      if (evt.type === 'video_ready') {
+        loadDownloads();
+        fetchFlowCredits();
+        showToastNotification(`Video Ready: ${evt.data ? evt.data.filename : 'Saved to vault'}`, 'success');
+      }
+    }
+
+    function updateAgentHud(job) {
+      const stageEl = document.getElementById('liveAgentStage');
+      const badgeEl = document.getElementById('liveAgentBadge');
+      const textEl = document.getElementById('liveStatusText');
+      const barEl = document.getElementById('liveProgressBar');
+      const dotEl = document.getElementById('liveAgentDot');
+
+      if (!stageEl || !badgeEl || !barEl) return;
+
+      const stage = (job.stage || 'idle').toUpperCase();
+      const progress = job.progress !== undefined ? job.progress : 0;
+      const msg = job.message || 'Standby';
+
+      stageEl.innerText = stage === 'IDLE' ? 'Agent Standby' : `Agent ${job.stage}`;
+      badgeEl.innerText = stage;
+      textEl.innerText = msg;
+      barEl.style.width = progress + '%';
+
+      if (stage === 'IDLE') {
+        badgeEl.className = 'text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+        dotEl.className = 'w-1.5 h-1.5 rounded-full volt-dot';
+      } else if (stage === 'READY') {
+        badgeEl.className = 'text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        dotEl.className = 'w-1.5 h-1.5 rounded-full volt-dot animate-pulse';
+        setTimeout(() => {
+          updateAgentHud({ stage: 'idle', progress: 0, message: 'Standby · Real-time pipeline active.' });
+        }, 8000);
+      } else {
+        badgeEl.className = 'text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 animate-pulse';
+        dotEl.className = 'w-1.5 h-1.5 rounded-full volt-dot animate-ping';
+      }
+    }
+
+    function appendTerminalLog(logItem) {
+      const container = document.getElementById('terminalLogs');
+      if (!container) return;
+      const row = document.createElement('div');
+      row.className = 'leading-relaxed hover:text-slate-200 transition';
+      const timeStr = logItem.timestamp || new Date().toLocaleTimeString();
+      row.innerHTML = `<span class="ashzo-text-dim">[${timeStr}]</span> <span class="text-indigo-400 font-semibold">${logItem.stage ? '[' + logItem.stage.toUpperCase() + '] ' : ''}</span>${logItem.message}`;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function toggleAgentFeed() {
+      const feed = document.getElementById('agentTerminalFeed');
+      const chev = document.getElementById('feedChevron');
+      const isOpen = !feed.classList.contains('hidden');
+      if (isOpen) {
+        feed.classList.add('hidden');
+        chev.classList.remove('rotate-180');
+      } else {
+        feed.classList.remove('hidden');
+        chev.classList.add('rotate-180');
+      }
+    }
+
+    function showToastNotification(text, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'ashzo-glass border ashzo-border rounded-xl px-3.5 py-2 text-xs font-mono shadow-2xl flex items-center gap-2 transform transition-all duration-300 translate-y-3 opacity-0 pointer-events-auto';
+      const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-400"></i>' : (type === 'error' ? '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>' : '<i class="fa-solid fa-circle-info text-indigo-400"></i>');
+      toast.innerHTML = `${icon} <span class="truncate max-w-xs">${text}</span>`;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-3', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4500);
     }
 
     // -------------------------------------------------------------
@@ -1272,18 +1429,65 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     loadSessions();
     loadDownloads();
     fetchFlowCredits();
+    initLiveStream();
   </script>
 </body>
 </html>
 """
 
 # =====================================================================
-# REST API Endpoints
+# REST API Endpoints & Real-Time Event Stream
 # =====================================================================
 
 @web_app.get("/", response_class=HTMLResponse)
 async def get_dashboard():
     return HTMLResponse(content=DASHBOARD_HTML)
+
+
+@web_app.get("/api/live/stream")
+async def api_live_stream():
+    """Server-Sent Events (SSE) endpoint streaming real-time agent progress and updates."""
+    async def event_generator():
+        q = live_broadcaster.subscribe()
+        init_state = live_broadcaster.get_initial_state()
+        yield f"data: {json.dumps({'type': 'init', 'data': init_state})}\n\n"
+        try:
+            while True:
+                try:
+                    event = await asyncio.wait_for(q.get(), timeout=12.0)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+        finally:
+            live_broadcaster.unsubscribe(q)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+
+
+@web_app.get("/api/live/status")
+async def api_live_status():
+    """Returns current active job snapshot and recent agent logs."""
+    return live_broadcaster.get_initial_state()
+
+
+@web_app.post("/api/live/broadcast")
+async def api_live_broadcast(payload: Dict[str, Any]):
+    """Internal/test broadcast hook to push real-time events through SSE."""
+    event_type = payload.get("type", "log")
+    message = payload.get("message", "")
+    stage = payload.get("stage")
+    progress = payload.get("progress")
+    data = payload.get("data")
+    await live_broadcaster.broadcast(event_type, message, data=data, stage=stage, progress=progress)
+    return {"status": "broadcasted"}
 
 
 @web_app.get("/api/flow/credits")
@@ -1339,6 +1543,13 @@ async def api_flow_generate(payload: Dict[str, Any], background_tasks: Backgroun
         "starting_frame": start_frame,
         "ending_frame": end_frame
     }]
+
+    await live_broadcaster.broadcast(
+        "progress",
+        f"Video queued: '{slug}' with {model.upper()} ({dur_num}s, {quality})",
+        stage="queued",
+        progress=5
+    )
 
     background_tasks.add_task(
         automator.execute_batch_production,
