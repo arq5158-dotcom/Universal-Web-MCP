@@ -157,18 +157,35 @@ class NetworkInterceptor:
         captured_cookies: List[Dict[str, Any]] = []
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=self.headless,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                    "--no-sandbox",
-                    "--disable-dev-shm-usage"
-                ]
-            )
-            context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-                viewport={"width": 1280, "height": 800}
-            )
+            browser = None
+            context = None
+            is_connected_cdp = False
+
+            # Strategy 1: Attempt direct connection to existing Chrome running with CDP port 9222
+            try:
+                browser = await p.chromium.connect_over_cdp("http://127.0.0.1:9222", timeout=3000)
+                if browser.contexts:
+                    context = browser.contexts[0]
+                else:
+                    context = await browser.new_context()
+                is_connected_cdp = True
+                logger.info("Connected directly to live Chrome instance over CDP (port 9222)!")
+            except Exception:
+                # Strategy 2: Launch dedicated headless Chromium instance
+                logger.debug("Port 9222 not reachable, launching headless browser")
+                browser = await p.chromium.launch(
+                    headless=self.headless,
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage"
+                    ]
+                )
+                context = await browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                    viewport={"width": 1280, "height": 800}
+                )
+
             page = await context.new_page()
 
             # Attach CDP session for low-level inspection
@@ -253,7 +270,11 @@ class NetworkInterceptor:
             page_title = await page.title()
             final_url = page.url
 
-            await browser.close()
+            # Close page / browser safely
+            if is_connected_cdp:
+                await page.close()
+            else:
+                await browser.close()
 
         # Deduplicate routes by ID
         unique_routes = {}

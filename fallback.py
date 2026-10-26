@@ -146,14 +146,25 @@ class FallbackDOMReader:
     ) -> Dict[str, Any]:
         """Loads the page in headless browser and extracts clean fallback content."""
         async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=self.headless,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
-            )
-            context = await browser.new_context(
-                viewport={"width": 1280, "height": 800},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-            )
+            browser = None
+            context = None
+            is_connected_cdp = False
+
+            # Try connecting to live Chrome first
+            try:
+                browser = await p.chromium.connect_over_cdp("http://127.0.0.1:9222", timeout=3000)
+                context = browser.contexts[0] if browser.contexts else await browser.new_context()
+                is_connected_cdp = True
+            except Exception:
+                browser = await p.chromium.launch(
+                    headless=self.headless,
+                    args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
+                )
+                context = await browser.new_context(
+                    viewport={"width": 1280, "height": 800},
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+                )
+
             page = await context.new_page()
 
             try:
@@ -179,5 +190,8 @@ class FallbackDOMReader:
                 markdown = clean_html_to_markdown(html_body)
                 result["markdown"] = markdown
 
-            await browser.close()
+            if is_connected_cdp:
+                await page.close()
+            else:
+                await browser.close()
             return result
