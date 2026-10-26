@@ -11,6 +11,9 @@ for dir in downloads saved_sessions logs; do
   ln -sfn "$DATA/$dir" "/app/$dir"
 done
 ln -sfn "$DATA/browser-profile" "/app/.ashzo_browser"
+# No browser is running yet, so any lock in the profile is left over from the last container.
+# Chrome refuses to start on a lock that names another computer (a recreated container has a new hostname).
+rm -f "$DATA/browser-profile"/SingletonLock "$DATA/browser-profile"/SingletonCookie "$DATA/browser-profile"/SingletonSocket
 for file in ashzo_settings.json sessions.json session_cookies.json flow_auth_state.json learned_routes.json; do
   ln -sfn "$DATA/$file" "/app/$file"
 done

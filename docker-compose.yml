@@ -7,6 +7,7 @@ services:
     build: .
     image: ashzo-mcp:latest
     container_name: ashzo-mcp
+    hostname: ashzo  # fixed, so Chrome's profile lock never names a different computer
     init: true
     restart: unless-stopped
     ports:

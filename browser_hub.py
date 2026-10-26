@@ -198,11 +198,15 @@ class BrowserHub:
         if platform.system() == "Linux" and hasattr(os, "geteuid") and os.geteuid() == 0:
             args.append("--no-sandbox")
         args.append("about:blank")
-        kwargs: Dict[str, Any] = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL}
+        # Chrome's own errors go to logs/chrome.log, so a failed start can be explained.
+        (BASE_DIR / "logs").mkdir(exist_ok=True)
+        chrome_log = open(BASE_DIR / "logs" / "chrome.log", "ab")
+        kwargs: Dict[str, Any] = {"stdout": chrome_log, "stderr": chrome_log, "stdin": subprocess.DEVNULL}
         if platform.system() == "Windows":
             kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
         logger.info("Launching Ashzo Browser: %s (port %s, visible=%s)", exe, self.port, visible)
         self._proc = subprocess.Popen(args, **kwargs)
+        chrome_log.close()  # the child keeps its own copy
         deadline = time.time() + 25
         while time.time() < deadline:
             if await self._port_alive():
