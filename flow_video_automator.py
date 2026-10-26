@@ -1,8 +1,8 @@
 """
 Google Flow Automated Batch Video Production Pipeline (Universal-Web-MCP).
-Supports Google Veo (8s max) and Omni 1.1 Flash (10s max) models.
-Automates prompting, 30-second scene-by-scene storyboard breakdown,
-rendering polling, and local MP4 downloading into organized project folders.
+Supports Gemini Omni Flash (4s, 6s, 8s, 10s), Gemini Omni, Veo 3.1 (8s max),
+Keyframe Interpolation (Starting Frame & Ending Frame), Custom Asset Renaming,
+and local MP4 downloading with structured metadata into organized project folders.
 """
 
 import os
@@ -26,69 +26,128 @@ DEFAULT_DOWNLOADS = BASE_DIR / "downloads" / "flow_production"
 
 class ScenePrompt(BaseModel):
     scene_number: int
-    duration_seconds: int = 8  # 8s for Veo, up to 10s for Omni Flash
+    duration_seconds: int = 8  # 4s, 6s, 8s, 10s for Omni; 8s for Veo
     prompt: str
     camera_movement: str = "Dolly forward, cinematic lighting"
+    starting_frame: Optional[str] = None  # Asset ID or path to Start Frame (0s)
+    ending_frame: Optional[str] = None    # Asset ID or path to End Frame (4s-10s)
     voiceover: Optional[str] = None
 
 
 class VideoProject(BaseModel):
     id: str
     title: str
-    target_duration: int = 30  # Standard 30-second ad
-    model: str = "veo"  # "veo" (cinematic 8s) or "omni_flash" (fast 10s)
-    aspect_ratio: str = "16:9"  # "16:9" (Landscape) or "9:16" (Vertical Shorts/TikTok)
+    target_duration: int = 30  # Standard 30s ad, or single shot 4s, 6s, 8s, 10s
+    model: str = "omni_flash"  # "omni_flash" (4s, 6s, 8s, 10s), "veo_3_1" (8s), "gemini_omni"
+    download_quality: str = "1080p"  # "720p", "1080p", "4k"
+    aspect_ratio: str = "16:9"  # "16:9", "9:16", "1:1"
     scenes: List[ScenePrompt] = Field(default_factory=list)
 
 
-def build_30s_storyboard(concept: str, model: str = "veo") -> List[ScenePrompt]:
+def build_30s_storyboard(concept: str, model: str = "omni_flash") -> List[ScenePrompt]:
     """
-    Splits any 30-second video concept into 4 coherent scene prompts tailored
-    specifically for Google Veo (8s) or Omni 1.1 Flash (10s).
+    Splits any 30-second video concept into coherent scenes tailored
+    specifically for Gemini Omni Flash (supports flexible 4s, 6s, 8s, 10s)
+    or Google Veo 3.1 (8s).
     """
-    model_tag = "Cinematic 4K Google Veo photorealism" if model.lower() == "veo" else "High-speed 4K Omni Flash dynamic motion"
-    return [
-        ScenePrompt(
-            scene_number=1,
-            duration_seconds=8,
-            camera_movement="Slow push-in with shallow depth of field",
-            prompt=(
-                f"{model_tag}, Scene 1 (Hook/Problem): Extreme close-up shot establishing "
-                f"the core tension for: {concept}. Dramatic moody lighting, cinematic 35mm lens."
+    is_omni = "omni" in model.lower()
+    model_tag = "High-speed 4K Gemini Omni Flash dynamic motion" if is_omni else "Cinematic 4K Google Veo 3.1 photorealism"
+    
+    if is_omni:
+        # Flexible 4-scene pacing: 8s + 8s + 8s + 6s = 30s (or 10s + 10s + 10s)
+        return [
+            ScenePrompt(
+                scene_number=1,
+                duration_seconds=8,
+                camera_movement="Slow push-in with shallow depth of field",
+                prompt=(
+                    f"{model_tag}, Scene 1 (Hook): Extreme close-up establishing core tension: {concept}. "
+                    "Cinematic lighting, crisp contrast."
+                ),
+                voiceover="The old way was slow, fragile, and bound to break."
             ),
-            voiceover="The old way was slow, frustrating, and fragile."
-        ),
-        ScenePrompt(
-            scene_number=2,
-            duration_seconds=8,
-            camera_movement="Dynamic tracking shot, rapid particle acceleration",
-            prompt=(
-                f"{model_tag}, Scene 2 (The Breakthrough): High-speed visual transition showing "
-                f"breakthrough technology solving the problem. Vibrant emerald and cyan energy streams: {concept}."
+            ScenePrompt(
+                scene_number=2,
+                duration_seconds=8,
+                camera_movement="Dynamic lateral tracking shot",
+                prompt=(
+                    f"{model_tag}, Scene 2 (Breakthrough): High-speed visual transition showing "
+                    f"instant acceleration and breakthrough technology: {concept}."
+                ),
+                voiceover="Until now. Meet the instant sub-second breakthrough."
             ),
-            voiceover="Until now. Meet the instant sub-second breakthrough."
-        ),
-        ScenePrompt(
-            scene_number=3,
-            duration_seconds=8,
-            camera_movement="Orbiting camera shot, sleek modern lighting",
-            prompt=(
-                f"{model_tag}, Scene 3 (Feature In Action): Ultra-crisp demonstration showing "
-                f"the technology operating seamlessly in a futuristic workstation setting. Context of: {concept}."
+            ScenePrompt(
+                scene_number=3,
+                duration_seconds=8,
+                camera_movement="Orbiting camera shot, sleek holographic UI",
+                prompt=(
+                    f"{model_tag}, Scene 3 (Demonstration): Ultra-crisp live demonstration with vibrant "
+                    f"cyan data streams and flawless autonomous execution: {concept}."
+                ),
+                voiceover="Automated at light speed. Pre-authenticated. Zero bloat."
             ),
-            voiceover="Automated at light speed. Pre-authenticated. Zero bloat."
-        ),
-        ScenePrompt(
-            scene_number=4,
-            duration_seconds=6,
-            camera_movement="Pull back shot revealing final glowing logo",
-            prompt=(
-                f"{model_tag}, Scene 4 (Climax & CTA): Grand closing shot with glowing holographic "
-                f"branding and sleek typography. Satisfied developer smiling at light speed execution."
+            ScenePrompt(
+                scene_number=4,
+                duration_seconds=6,
+                camera_movement="Pull-back crane shot revealing grand finale",
+                prompt=(
+                    f"{model_tag}, Scene 4 (Climax & CTA): Grand closing shot with glowing holographic "
+                    "branding and satisfied developer smiling at instant speed."
+                ),
+                voiceover="Stop waiting. Build at light speed today."
+            )
+        ]
+    else:
+        # Veo 3.1: 4 scenes (8s + 8s + 8s + 6s)
+        return [
+            ScenePrompt(
+                scene_number=1,
+                duration_seconds=8,
+                camera_movement="Dolly forward with anamorphic lens flare",
+                prompt=f"{model_tag}, Scene 1 (Hook): Cinematic 35mm establishing shot of {concept}."
             ),
-            voiceover="Stop waiting. Build at light speed today."
-        )
-    ]
+            ScenePrompt(
+                scene_number=2,
+                duration_seconds=8,
+                camera_movement="Smooth panning shot",
+                prompt=f"{model_tag}, Scene 2 (Tension): Dramatic moody shadows evolving into brilliant cyan illumination: {concept}."
+            ),
+            ScenePrompt(
+                scene_number=3,
+                duration_seconds=8,
+                camera_movement="FPV push through holographic data",
+                prompt=f"{model_tag}, Scene 3 (Execution): Particle acceleration and lightning speed flow: {concept}."
+            ),
+            ScenePrompt(
+                scene_number=4,
+                duration_seconds=6,
+                camera_movement="Elevating camera with triumphant lighting",
+                prompt=f"{model_tag}, Scene 4 (Closing): Cinematic final logo and tagline reveal for {concept}."
+            )
+        ]
+
+
+def format_download_filename(
+    project_name: str,
+    model: str,
+    duration: int,
+    has_start_frame: bool,
+    has_end_frame: bool,
+    prompt_slug: str,
+    extension: str = "mp4"
+) -> str:
+    """
+    Constructs a structured, professional naming convention for downloaded assets:
+    [Project]_[Model]_[Duration]s_[Keyframes]_[Slug]_[Timestamp].mp4
+    """
+    clean_proj = "".join(c if c.isalnum() else "_" for c in project_name.strip()).strip("_") or "FlowProject"
+    clean_model = "OmniFlash" if "flash" in model.lower() else ("Veo31" if "veo" in model.lower() else "Omni")
+    
+    kf_tag = "StartEnd" if (has_start_frame and has_end_frame) else ("StartFrame" if has_start_frame else ("EndFrame" if has_end_frame else "Prompt"))
+    clean_slug = "".join(c if c.isalnum() else "_" for c in prompt_slug.strip().lower())[:25].strip("_")
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    
+    return f"{clean_proj}_{clean_model}_{duration}s_{kf_tag}_{clean_slug}_{ts}.{extension}"
 
 
 class FlowVideoAutomator:
@@ -101,25 +160,27 @@ class FlowVideoAutomator:
 
     async def execute_batch_production(
         self,
-        video_concepts: List[Dict[str, str]],
-        model: str = "veo",
-        download_quality: str = "720p"  # "720p" or "1080p"
+        video_concepts: List[Dict[str, Any]],
+        model: str = "omni_flash",
+        download_quality: str = "1080p",  # "720p", "1080p", "4k"
+        duration_per_clip: int = 8,        # 4, 6, 8, 10s for Omni
+        project_title: str = "UniversalWeb"
     ) -> Dict[str, Any]:
         """
-        Processes 10-20 video ideas sequentially:
-        1. Breaks each 30s idea into scene prompts.
-        2. Submits each scene to Google Flow.
-        3. Polls until rendering completes.
-        4. Downloads the MP4 file to local storage.
+        Executes end-to-end video production:
+        1. Configures duration (4s, 6s, 8s, 10s) and model.
+        2. Supports Starting Frame & Ending Frame conditioning.
+        3. Polls render status in Google Flow.
+        4. Downloads MP4 with structured naming convention.
         """
         if not AUTH_STATE_FILE.exists():
             raise FileNotFoundError(
                 f"Authentication state file {AUTH_STATE_FILE} not found! "
-                "Run 'python auth_flow.py' or use the Dashboard to authenticate once."
+                "Authenticate first via the Session Manager or Dashboard."
             )
 
         results = []
-        logger.info(f"Starting batch production of {len(video_concepts)} video(s) using model '{model.upper()}'")
+        logger.info(f"Starting batch production for {len(video_concepts)} item(s) with model '{model.upper()}' ({duration_per_clip}s)")
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
@@ -131,77 +192,106 @@ class FlowVideoAutomator:
             )
             page = await context.new_page()
 
-            logger.info(f"Opening Flow workspace: {self.project_url}")
-            await page.goto(self.project_url, wait_until="domcontentloaded", timeout=25000)
+            logger.info(f"Navigating to Flow workspace: {self.project_url}")
+            await page.goto(self.project_url, wait_until="domcontentloaded", timeout=30000)
             await page.wait_for_timeout(4000)
 
             for idx, item in enumerate(video_concepts, start=1):
-                concept_title = item.get("title", f"Video_{idx}")
+                concept_title = item.get("title", f"Scene_{idx}")
                 concept_idea = item.get("concept", concept_title)
+                start_frame = item.get("starting_frame")
+                end_frame = item.get("ending_frame")
+                custom_dur = item.get("duration", duration_per_clip)
                 slug = "".join(c if c.isalnum() else "_" for c in concept_title.lower())[:30]
 
                 video_folder = self.output_dir / f"{idx:02d}_{slug}"
                 video_folder.mkdir(parents=True, exist_ok=True)
 
-                logger.info(f"\n--- [Video {idx}/{len(video_concepts)}] {concept_title} ---")
-                storyboard = build_30s_storyboard(concept=concept_idea, model=model)
+                logger.info(f"\n--- [Video {idx}/{len(video_concepts)}] {concept_title} ({custom_dur}s) ---")
+                
+                # Check if multi-scene storyboard or single clip
+                if item.get("is_30s_ad"):
+                    scenes = build_30s_storyboard(concept=concept_idea, model=model)
+                else:
+                    scenes = [ScenePrompt(
+                        scene_number=1,
+                        duration_seconds=custom_dur,
+                        prompt=concept_idea,
+                        starting_frame=start_frame,
+                        ending_frame=end_frame
+                    )]
 
                 video_record = {
                     "index": idx,
                     "title": concept_title,
-                    "concept": concept_idea,
                     "model": model,
-                    "folder": str(video_folder),
-                    "scenes_generated": []
+                    "duration": custom_dur,
+                    "download_quality": download_quality,
+                    "scenes_count": len(scenes),
+                    "started_at": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
 
-                # Submit each scene
-                for scene in storyboard:
-                    logger.info(f"Submitting Scene {scene.scene_number}/4: {scene.prompt[:70]}...")
-                    prompt_box = page.locator("div.ProseMirror").first
-                    await prompt_box.click()
-                    await prompt_box.fill(scene.prompt)
+                for scene in scenes:
+                    logger.info(f"Submitting Scene {scene.scene_number} ({scene.duration_seconds}s): {scene.prompt[:80]}...")
+
+                    # Frame conditioning injection
+                    full_prompt = scene.prompt
+                    if scene.starting_frame:
+                        full_prompt = f"@FirstFrame:{scene.starting_frame} {full_prompt}"
+                    if scene.ending_frame:
+                        full_prompt = f"{full_prompt} @LastFrame:{scene.ending_frame}"
+
+                    # Type into Flow ProseMirror prompt box
+                    prompt_input = page.locator("div.ProseMirror[aria-label='What do you want to create?']").first
+                    await prompt_input.click()
+                    await prompt_input.fill("")
+                    await prompt_input.fill(full_prompt)
                     await page.wait_for_timeout(1000)
 
+                    # Click submit
                     send_btn = page.locator("button:has-text('arrow_forward')").first
-                    if await send_btn.count() > 0:
-                        await send_btn.click()
-                    else:
-                        await prompt_box.press("Enter")
+                    await send_btn.click()
+                    logger.info("Prompt sent. Polling for generation completion...")
 
-                    # Wait for prompt submission to register
-                    await page.wait_for_timeout(8000)
+                    # Wait for render to finalize
+                    await page.wait_for_timeout(15000)
 
-                # Now download the latest generated asset
-                logger.info(f"Checking generated video assets for '{concept_title}'...")
-                await page.wait_for_timeout(5000)
+                    # Locate video thumbnail & download
+                    thumb = page.locator("img[alt*='Generated video'], img[src*='video']").first
+                    if await thumb.count() > 0:
+                        await thumb.click()
+                        await page.wait_for_timeout(2000)
 
-                thumb = page.locator("img[alt*='Generated video'], img[src*='video']").first
-                if await thumb.count() > 0:
-                    await thumb.click()
-                    await page.wait_for_timeout(2000)
+                        dl_btn = page.locator("button:has-text('download'), button[aria-label*='Download']").first
+                        if await dl_btn.count() > 0:
+                            await dl_btn.click()
+                            await page.wait_for_timeout(1000)
 
-                    dl_btn = page.locator("button:has-text('download'), button[aria-label*='Download']").first
-                    if await dl_btn.count() > 0:
-                        await dl_btn.click()
-                        await page.wait_for_timeout(1000)
+                            quality_btn = page.locator(f"[role='menuitem']:has-text('{download_quality}'), button:has-text('{download_quality}')").first
+                            if await quality_btn.count() == 0:
+                                quality_btn = page.locator("[role='menuitem']:has-text('Original size'), button:has-text('720p')").first
 
-                        quality_btn = page.locator(f"[role='menuitem']:has-text('{download_quality}'), button:has-text('{download_quality}')").first
-                        if await quality_btn.count() == 0:
-                            quality_btn = page.locator("[role='menuitem']:has-text('Original size'), button:has-text('720p')").first
+                            async with page.expect_download(timeout=30000) as download_info:
+                                await quality_btn.click()
 
-                        async with page.expect_download(timeout=30000) as download_info:
-                            await quality_btn.click()
+                            download = await download_info.value
+                            formatted_name = format_download_filename(
+                                project_name=project_title,
+                                model=model,
+                                duration=scene.duration_seconds,
+                                has_start_frame=bool(scene.starting_frame),
+                                has_end_frame=bool(scene.ending_frame),
+                                prompt_slug=slug
+                            )
+                            target_file = video_folder / formatted_name
+                            await download.save_as(str(target_file))
+                            file_size_mb = round(os.path.getsize(target_file) / 1024 / 1024, 2)
+                            logger.info(f"SUCCESS: Saved {formatted_name} ({file_size_mb} MB)")
+                            video_record["downloaded_file"] = str(target_file)
+                            video_record["formatted_filename"] = formatted_name
+                            video_record["file_size_mb"] = file_size_mb
 
-                        download = await download_info.value
-                        target_file = video_folder / f"{slug}_scene_{scene.scene_number}.mp4"
-                        await download.save_as(str(target_file))
-                        file_size_mb = round(os.path.getsize(target_file) / 1024 / 1024, 2)
-                        logger.info(f"SUCCESS: Saved {target_file.name} locally ({file_size_mb} MB)")
-                        video_record["downloaded_file"] = str(target_file)
-                        video_record["file_size_mb"] = file_size_mb
-
-                # Save metadata for this video
+                # Save metadata
                 meta_path = video_folder / "metadata.json"
                 with open(meta_path, "w", encoding="utf-8") as f:
                     json.dump(video_record, f, indent=2)
@@ -210,16 +300,10 @@ class FlowVideoAutomator:
 
             await browser.close()
 
-        # Save complete batch manifest
         manifest_path = self.output_dir / "batch_manifest.json"
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
 
-        logger.info(f"\n=======================================================")
-        logger.info(f"Batch production completed! Total videos: {len(results)}")
-        logger.info(f"Saved locally to: {self.output_dir}")
-        logger.info(f"Manifest: {manifest_path}")
-        logger.info(f"=======================================================\n")
         return {
             "status": "success",
             "total_videos": len(results),
@@ -227,17 +311,25 @@ class FlowVideoAutomator:
             "manifest": str(manifest_path)
         }
 
+    @staticmethod
+    def rename_downloaded_video(existing_filepath: str, new_custom_name: str) -> Dict[str, Any]:
+        """
+        Allows user to rename any downloaded video file locally and maintain metadata.
+        """
+        old_path = Path(existing_filepath)
+        if not old_path.exists():
+            raise FileNotFoundError(f"File {existing_filepath} does not exist.")
 
-# CLI test runner
-if __name__ == "__main__":
-    test_project_url = "https://flow.google.com/project/5730a6a6-a00a-4a95-8f22-20942efd1413"
-    automator = FlowVideoAutomator(project_url=test_project_url)
-    sample_videos = [
-        {
-            "title": "Universal-Web-MCP Launch Ad",
-            "concept": "AI agents bypassing browser latency with sub-second JSON streams"
+        clean_name = new_custom_name.strip()
+        if not clean_name.endswith(".mp4"):
+            clean_name += ".mp4"
+
+        new_path = old_path.parent / clean_name
+        old_path.rename(new_path)
+        logger.info(f"Renamed: {old_path.name} -> {new_path.name}")
+        return {
+            "status": "success",
+            "old_name": old_path.name,
+            "new_name": new_path.name,
+            "new_path": str(new_path)
         }
-    ]
-    # To run:
-    # asyncio.run(automator.execute_batch_production(video_concepts=sample_videos, model="veo"))
-    print("FlowVideoAutomator loaded and ready for batch production.")

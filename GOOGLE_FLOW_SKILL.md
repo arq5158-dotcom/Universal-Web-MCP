@@ -1,6 +1,6 @@
 # Google Flow Skill: The Complete Platform Knowledge Base 🎬🧠
 
-> **Skill Purpose:** This document is the definitive operational skill manual for Google Flow (`flow.google.com`). Any AI model, agent, or developer reading this file immediately understands all modes, models, durations, reference conditioning, `@` tag syntax, tools, and UI automation selectors without needing to explore or search.
+> **Skill Purpose:** This document is the definitive operational manual for Google Flow (`flow.google.com`). Any AI model, agent, or developer reading this file immediately understands all models, durations (4s, 6s, 8s, 10s), starting/ending keyframes, credit tiers, asset naming, tools, and UI automation selectors without needing to explore or search.
 
 ---
 
@@ -9,17 +9,17 @@
 Google Flow operates in two primary execution modes:
 
 ### A. Agent Mode (Creative Co-Pilot)
-- **Role:** Interactive creative director powered by Google's multi-modal creative assistant.
+- **Role:** Interactive creative partner powered by Gemini's multimodal assistant.
 - **Capabilities:**
-  - Automatically recommends scene breakdowns and storyboard scripts.
+  - Suggests scene breakdowns and storyboard scripts based on project context.
   - Assembles complex 30-second commercials scene-by-scene.
-  - Suggests character backstories, lighting styles, and audio-reactive pacing.
-- **Trigger:** Selected by default when interacting in the main workspace chat interface.
+  - Suggests character backstories, lighting styles, camera motions, and audio pacing.
+- **Trigger:** Active in the project chat/storyboard canvas.
 
 ### B. Direct Mode (Raw Generative Pipeline)
-- **Role:** Direct model prompting without assistant conversation.
+- **Role:** Direct model prompting without assistant dialogue.
 - **Capabilities:**
-  - Bypasses conversational confirmation dialogues (`Agent Settings: Confirm before generating -> Never`).
+  - Bypasses conversational confirmation dialogs.
   - Sends direct generation tokens straight to the rendering queue.
   - Ideal for high-speed programmatic batch processing via Universal-Web-MCP.
 
@@ -27,12 +27,13 @@ Google Flow operates in two primary execution modes:
 
 ## 🎥 2. Generative Models, Clip Durations & Aspect Ratios
 
-| Model Identifier | Internal Code | Max Duration | Primary Strength | Ideal Use Cases |
+| Model Identifier | Internal Model Code | Supported Durations | Primary Strength | Ideal Use Cases |
 | :--- | :--- | :--- | :--- | :--- |
-| **Google Veo** | `veo_1` | **8 Seconds** | Ultra-photorealistic 4K visual fidelity, rich physics, lighting nuance, 35mm shallow depth of field | Hero commercials, cinematic film scenes, brand ads |
-| **Omni 1.1 Flash** | `abra_t2v_10s` | **10 Seconds** | Ultra-fast rendering speed, high prompt responsiveness, dynamic motion | High-volume batch generation (10–20 videos), rapid iterations, vertical social video |
-| **Imagen 3** | `imagen_3` | **Still Image** | 4K crisp visual keyframing, text rendering in images, photorealistic portraits | Keyframing characters and scenes before animating |
-| **Ingredient Model** | `flow_img2vid` | **8–10 Seconds**| Conditions video generation using input image/video references | Animating sketches, product mockups, or character stills |
+| **Gemini Omni Flash** | `abra_t2v_flash` | **4s, 6s, 8s, 10s** (Flexible odd/even durations) | Rapid generation, high prompt responsiveness, dynamic motion | High-volume batch generation (10–20 videos), rapid iterations, flexible timing |
+| **Gemini Omni** | `gemini_omni_v1` | **4s, 6s, 8s, 10s** | Deep world understanding, multimodality, conversational video editing | Multimodal conditioning, keyframe interpolation |
+| **Veo 3.1** | `veo_3_1` | **8s Max Clip** | Expanded creative controls, native audio, physics & realism | Hero commercials, cinematic photorealism, 35mm shallow depth of field |
+| **Nano Banana Pro** | `nano_banana_pro` | **4s, 6s, 8s** | Lightweight rapid prototyping | Conceptual testing, animatics |
+| **Imagen 3** | `imagen_3` | **Still Image** | 4K crisp visual keyframing, text rendering in images | Starting frames, ending frames, character concepts |
 
 ### Supported Aspect Ratios:
 - `16:9` (Standard Landscape — YouTube, Commercials, Desktop)
@@ -42,96 +43,125 @@ Google Flow operates in two primary execution modes:
 
 ---
 
-## 🧬 3. The "Ingredients" System & Reference Conditioning
+## 🎞️ 3. Starting Frames, Ending Frames & Keyframe Interpolation
 
-Google Flow allows conditioning generations using external or existing project assets:
+Google Flow and Gemini Omni excel in **Keyframe-to-Video Interpolation**:
 
-1. **Image-to-Video (Keyframe Conditioning):**  
-   An existing still image (generated via Imagen 3 or uploaded) is passed as an ingredient. The model animates the visual elements while maintaining 100% aesthetic continuity.
-2. **Video-to-Video (Style & Motion Transfer):**  
-   Takes an input motion clip and applies generative shader filters (e.g. turning live-action into anime or cyberpunk render).
-3. **Add Reference (Visual Anchors):**  
-   Attaches reference photos of a real product or character to force facial and structural consistency across multiple generated scenes.
+### A. First Frame (Starting Frame — `t = 0.0s`)
+- **Function:** Establishes the exact initial composition, lighting, subject position, and style.
+- **How to provide:** 
+  - Upload an image or generate one via Imagen 3.
+  - Attach as `@FirstFrame` or drag into the Starting Frame dropzone in the Storyboard node.
+  - The model treats pixel coordinates from this image as the ground truth start of the motion clip.
+
+### B. Last Frame (Ending Frame — `t = 4s / 6s / 8s / 10s`)
+- **Function:** Defines the exact destination pose, scene resolution, or closing shot.
+- **How to provide:**
+  - Attach as `@LastFrame` or select an existing asset in the Storyboard.
+  - **Temporal Interpolation:** Gemini Omni computes physically plausible in-between motion and morphing from the Starting Frame to the Ending Frame across the selected duration.
+
+### C. Ingredient Conditioning (`@` Tag Syntax)
+- `@FirstFrame:AssetID` — Locks clip start to specific keyframe.
+- `@LastFrame:AssetID` — Locks clip end to destination keyframe.
+- `@Character:Name` — Maintains character facial and structural identity.
+- `@Ingredient:StyleName` — Applies persistent color palettes or visual textures.
+- `@Scene:Number` — Links lighting and background continuity from previous scenes.
 
 ---
 
-## 🏷️ 4. Special Tagging & Syntax Rules
+## 🏷️ 4. Asset Naming & Local File Renaming Pipeline
 
-When constructing prompts inside Google Flow, use these native platform tags:
+### A. Inside Google Flow Canvas:
+- Every generation card or storyboard scene has a title field:
+  - Format: `[Scene_Number] - [Descriptive_Title]`
+  - Example: `Scene 01 - Cyberpunk Terminal Opening`
 
-- `@Character:Name` — Locks the generation to a persistent character defined in the **Characters** library (generated via Character X-ray).
-- `@Scene:SceneNumber` — Links the visual background, camera angle, and color grading of a previous scene in the **Storyboard**.
-- `@Tool:ToolName` — Dynamically invokes a specialized studio tool (e.g. `@Type Overlays`, `@Shader Effects`).
-- `@Asset:AssetID` — References an existing media item in the project Library.
-
-### 4K Prompt Formula for Veo:
+### B. Local Disk Download Naming Standard:
+When Universal-Web-MCP downloads completed video clips, it enforces a structured naming convention:
 ```text
-[Cinematic Shot Type] + [Subject & Action] + [Camera Motion] + [Lighting & Atmosphere] + [Lens & Style]
-Example:
-"Cinematic close-up of an AI terminal breaking through latency lag with neon blue data streams. Slow dolly forward push-in, anamorphic lens, 35mm shallow depth of field, 4K crisp photorealism."
+[ProjectName]_[Model]_[Duration]s_[Keyframes]_[PromptSlug]_[YYYYMMDD_HHMMSS].[ext]
 ```
+- **Example 1 (Omni Flash with Start & End frames):**
+  `UniversalWeb_OmniFlash_6s_Start-End_ai_terminal_data_streams_20261026_154512.mp4`
+- **Example 2 (Veo 3.1 8s Cinematic):**
+  `UniversalWeb_Veo31_8s_Prompt_futuristic_hologram_breakthrough_20261026_154800.mp4`
 
 ---
 
-## 🎛️ 5. The 12 Native Creative Tools in Flow
+## 💎 5. Google Flow Credit & Quota System
+
+Every Google Flow account operates under specific daily and monthly credit allocations:
+
+| Subscription Plan | Daily Credits (Refreshes Every 24h) | Monthly Flow Credits | AI Top-Ups Available | Typical Cost per Clip |
+| :--- | :--- | :--- | :--- | :--- |
+| **Free Plan** | **50 Daily Credits** | None | No | ~5–10 credits |
+| **Google AI Pro** | **50 Daily Credits** | **1,000 Monthly Credits** | Yes | ~5 credits (Omni Flash) / ~10 credits (Veo 3.1) |
+| **Ultra / Studio** | **50 Daily Credits** | **10,000 – 25,000 Monthly** | Yes | Highest priority rendering queue |
+
+### Generation Credit Costs:
+- **Gemini Omni Flash (4s–10s):** ~5 credits per generation
+- **Veo 3.1 (8s 4K):** ~10 credits per generation
+- **Upscaling (1080p / 4K):** ~2 to 5 credits per upscale
+
+---
+
+## 🤖 6. AI Agent Conversational Protocol (Interactive Interview)
+
+Whenever an AI agent assists a user in creating videos in Google Flow, the agent must:
+
+1. **Display Account Credit Balance:**
+   - Inform the user of their available daily allowance (50 credits) and active plan balance (e.g., Google AI Pro 1,000 monthly credits).
+2. **Solicit Model Choice:**
+   - **Gemini Omni Flash** (Fast, 4s/6s/8s/10s, rapid iteration)
+   - **Veo 3.1** (Photorealistic 8s, 4K, native audio)
+   - **Gemini Omni** (Multimodal editing, keyframe interpolation)
+3. **Solicit Target Duration:**
+   - **4s, 6s, 8s, 10s** (Single shot)
+   - **30-Second Commercial Ad** (Automated 4-scene assembly)
+4. **Solicit Download Quality:**
+   - **1080p Upscaled** (Recommended for production)
+   - **720p Native** (Fastest download)
+   - **4K Cinematic** (Requires Pro tier credits)
+5. **Frame Interpolation Confirmation:**
+   - Ask if the user wants to specify a **Starting Frame** and/or **Ending Frame** or generate purely from text.
+
+---
+
+## 🎛️ 7. The 12 Native Creative Tools in Flow
 
 Every project workspace has access to 12 specialized creative tools:
-
-| Tool Name | Tool ID / Route | Functionality |
-| :--- | :--- | :--- |
-| **Storyboard Studio** | `79c9d2e6-4ad6-4636-ad05-22022f8a5a74` | Writes scripts, generates cast characters, and visualizes scene-by-scene storyboard clips. |
-| **Type Overlays** | `075ead65-520a-4f5e-88bd-f150caa24dc4` | Adds animated kinetic typography, title cards, and lower thirds to videos. |
-| **Video Resizer** | `b78766c3-4cd7-4c1e-b597-769d4cfcf37a` | Crops and re-renders videos between 16:9, 9:16, and 1:1 aspect ratios. |
-| **Character X-ray** | `32f2b8f8-a1a9-43ed-899f-c0fbff2e9599` | Builds consistent multi-angle character profiles, outfits, and facial geometry. |
-| **Image Editor** | `1b12bbd4-51d7-4c76-8b62-24ac2473e07e` | Layer-based graphics editor, object removal, background adjustments. |
-| **Shader Effects** | `63ca3af5-0058-4c7f-b104-dfc417db2e22` | Applies customizable post-processing filters (bloom, chromatic aberration, retro grade). |
-| **Mockup** | `611fa902-797c-457d-92de-71a3dc714894` | Composites 2D images and logos into realistic 3D environments and devices. |
-| **Ribbit** | `46270263-54a1-46fb-a68c-dae111f650fb` | Synchronizes video playback dynamically to musical beats and audio stems. |
-| **Converge** | `f260ed2b-2a14-4ece-a8d3-88b8cf6e660f` | Converts rough hand-drawn sketches into photorealistic 3D renders. |
-| **pixelBento** | `44b73cc0-ad82-49a6-b118-86c31ec49a71` | Applies retro, lo-fi, 8-bit, VHS, and glitch art effects to video clips. |
-| **Grid Architect** | `52da09f1-1da1-4a40-96c6-41d36b3b2392` | Creates composite image grids and slices them into individual scene assets. |
-| **Scout360** | `2102cb9f-a06e-4590-8a53-aa34bdcb0dff` | Generates 360-degree panoramic VR environments from an image prompt. |
+- `Storyboard Studio`: Multi-scene scriptwriting and card generation.
+- `Type Overlays`: Animated kinetic typography, title cards, lower-thirds.
+- `Video Resizer`: Aspect ratio converter (16:9, 9:16, 1:1, 4:3).
+- `Character X-ray`: Multi-angle character consistency sheets.
+- `Image Editor`: Layer-based graphics editor, inpainting, object removal.
+- `Shader Effects`: Bloom, chromatic aberration, retro grade filters.
+- `Mockup`: Compositing 2D graphics onto 3D devices and environments.
+- `Ribbit`: Audio-reactive video syncing to musical beats.
+- `Converge`: Sketch-to-3D photorealistic rendering.
+- `pixelBento`: Lo-fi, 8-bit, VHS, and glitch art processing.
+- `Grid Architect`: Multi-panel image grid splitter.
+- `Scout360`: 360-degree panoramic VR skybox generator.
 
 ---
 
-## 📥 6. Export Qualities & Automated Download Selectors
+## 📥 8. Export Qualities & Verified DOM Selectors
 
-When clicking the download icon on a completed video asset, the platform opens an export menu:
-
-- **`720p Original size`** — Native model render output (fastest download, ~6MB per clip).
-- **`1080p Upscaled`** — High-definition upscaled render.
-- **`4K Upscaled`** — Full 4K ultra-resolution upscale (requires Google One AI Premium credits).
-- **`270p Animated GIF`** — Lightweight preview format for web and email.
-
-### DOM Automation Selectors (Verified):
 ```python
-# 1. Prompt input field:
+# Prompt Box:
 prompt_box = page.locator("div.ProseMirror[aria-label='What do you want to create?']").first
 
-# 2. Submit / Generate button:
+# Submit Button:
 send_btn = page.locator("button:has-text('arrow_forward')").first
 
-# 3. Open video asset modal:
-video_card = page.locator("img[alt*='Generated video'], img[src*='video']").first
+# Model Switcher:
+model_btn = page.locator("button:has-text('chevron_left'), button:has-text('chevron_right')").first
 
-# 4. Trigger download menu:
+# Video Card Download Menu:
 download_icon = page.locator("button:has-text('download'), button[aria-label*='Download']").first
 
-# 5. Quality selection:
+# Export Quality Dropdown Item:
 quality_720p = page.locator("[role='menuitem']:has-text('720p'), button:has-text('720p')").first
 quality_1080p = page.locator("[role='menuitem']:has-text('1080p'), button:has-text('1080p')").first
+quality_4k = page.locator("[role='menuitem']:has-text('4K'), button:has-text('4K')").first
 ```
-
----
-
-## ⚡ 7. 30-Second Commercial Production Formula
-
-To produce a full 30-second video without hitting the 8–10s single-clip duration cap:
-
-```
-[Clip 1: Hook] (8s)  -> Generate via Veo/Omni -> Download to scene_1.mp4
-[Clip 2: Solution] (8s) -> Generate via Veo/Omni -> Download to scene_2.mp4
-[Clip 3: Feature] (8s)  -> Generate via Veo/Omni -> Download to scene_3.mp4
-[Clip 4: CTA] (6s)      -> Generate via Veo/Omni -> Download to scene_4.mp4
-```
-All four clips are saved locally to `downloads/flow_production/<project_name>/`.
