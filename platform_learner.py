@@ -23,6 +23,29 @@ BASE_DIR = Path(__file__).resolve().parent
 SKILLS_DIR = BASE_DIR / "platform_skills"
 SKILLS_DIR.mkdir(parents=True, exist_ok=True)
 AUTH_STATE_FILE = BASE_DIR / "flow_auth_state.json"
+FLOW_NOTE = (
+    "\n> **Before automating Flow, read [GOOGLE_FLOW_SKILL.md](../GOOGLE_FLOW_SKILL.md) (sections 0 and 0.5 are mandatory).** "
+    "Generate with the `flow_generate_video` tool so the user watches it live in the dashboard, and follow "
+    "[VIDEO_RECREATION_SKILL.md](../VIDEO_RECREATION_SKILL.md) whenever a video is being recreated. "
+    "This file is an automatic snapshot of the page and can be out of date.\n"
+)
+
+
+def _to_learned_route(resp, body, page_url=""):
+    """An API response seen while exploring, in the form the Fast Path (Tier 1) replays."""
+    try:
+        from urllib.parse import parse_qs
+        from cookie_sync import mask_headers
+        from interceptor import LearnedRoute
+        u = urlparse(resp.url)
+        q = {k: v[0] if len(v) == 1 else v for k, v in parse_qs(u.query).items()}
+        return LearnedRoute(id=f"{resp.request.method.upper()}:{u.netloc}{u.path}", domain=u.netloc,
+                            url=resp.url.split("?")[0], method=resp.request.method.upper(), query_params=q,
+                            headers=mask_headers(dict(resp.request.headers)), response_schema=infer_json_schema(body),
+                            sample_response=summarize_payload(body, 300), discovered_at=time.strftime("%Y-%m-%d %H:%M:%S"),
+                            status_code=resp.status, page_url=page_url)
+    except Exception:
+        return None
 
 
 class PlatformLearner:
@@ -69,6 +92,7 @@ class PlatformLearner:
         }
 
         captured_routes = []
+        fast_routes = []
         captured_nav = []
         captured_inputs = []
         captured_buttons = []
@@ -104,6 +128,7 @@ class PlatformLearner:
                                     "schema": infer_json_schema(body),
                                     "sample": summarize_payload(body, 300)
                                 })
+                                fast_routes.append(_to_learned_route(resp, body, target_url))
                             except Exception:
                                 pass
 
@@ -161,6 +186,15 @@ class PlatformLearner:
 
                 await browser.close()
 
+            # Save what was found to the Fast Path cache, so later calls to these APIs skip the browser.
+            try:
+                from server import route_cache
+                uniq = {r.id: r for r in fast_routes if r is not None and r.status_code < 400}
+                if uniq:
+                    route_cache.add_routes(list(uniq.values()))
+            except Exception as e:
+                logger.debug(f"Could not save Fast Path routes: {e}")
+
             # Phase 5: Compile Platform Skill (90%)
             self.current_job["state"] = "COMPILING_SKILL"
             self.current_job["progress"] = 90
@@ -189,7 +223,7 @@ class PlatformLearner:
 
 Compiled automatically by **Universal-Web-MCP Autonomous Explorer**.
 This document serves as the operational handbook for any AI model or user automating **{domain}**.
-
+{FLOW_NOTE if "flow.google.com" in domain or "labs.google" in domain else ""}
 ---
 
 ## 📌 Executive Overview

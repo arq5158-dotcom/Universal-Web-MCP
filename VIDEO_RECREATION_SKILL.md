@@ -26,6 +26,8 @@
 ```
 Steps 1–7 happen once per video. Step 8 repeats for every clip that comes back wrong.
 
+**Shortcut inside Ashzo MCP:** the `study_video(path)` tool does the mechanical part of Steps 2–4 in one call (scene cuts at both thresholds, 1 fps contact sheets with timestamps, hook and ending sheets at 2 fps, spectrogram, loudness per second, silences) and returns the folder. You still have to **open and look at every picture it made** and keep the shot log yourself. Then generate each clip with `flow_generate_video` so the user can watch it live in the Ashzo MCP dashboard. Rules for running Flow are in [GOOGLE_FLOW_SKILL.md](GOOGLE_FLOW_SKILL.md), sections 0 and 0.5.
+
 ---
 
 ## Step 1: Intake

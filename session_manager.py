@@ -54,8 +54,8 @@ class SessionManager:
                     default_id = "sess_google_flow_default"
                     self.sessions[default_id] = {
                         "id": default_id,
-                        "name": "Google Flow (arq5020@gmail.com)",
-                        "email": "arq5020@gmail.com",
+                        "name": "Google Flow",
+                        "email": "",
                         "domain": "flow.google.com",
                         "is_active": True,
                         "created_at": datetime.now().isoformat(),
@@ -68,16 +68,36 @@ class SessionManager:
                     logger.debug(f"Auto-seed error: {e}")
 
     def save(self):
-        """Saves session profiles to sessions.json permanently."""
+        """Saves session profiles to sessions.json permanently and tells the dashboard."""
         try:
             with open(self.sessions_file, "w", encoding="utf-8") as f:
                 json.dump(self.sessions, f, indent=2)
             logger.info(f"Saved {len(self.sessions)} session profiles to {self.sessions_file}")
         except Exception as e:
             logger.error(f"Failed to save {self.sessions_file}: {e}")
+        try:
+            from live_events import live_broadcaster
+            live_broadcaster.emit("sessions_changed", "Accounts updated.")
+        except Exception:
+            pass
+
+    def reload_if_changed(self):
+        """Pick up changes written by another Ashzo process (e.g. the MCP server)."""
+        try:
+            mtime = self.sessions_file.stat().st_mtime if self.sessions_file.exists() else 0
+        except OSError:
+            mtime = 0
+        if mtime and mtime != getattr(self, "_mtime", None):
+            self._mtime = mtime
+            try:
+                with open(self.sessions_file, "r", encoding="utf-8") as f:
+                    self.sessions = json.load(f)
+            except Exception:
+                pass
 
     def list_sessions(self) -> List[Dict[str, Any]]:
         """Returns all configured sessions."""
+        self.reload_if_changed()
         return list(self.sessions.values())
 
     def get_active_session(self) -> Optional[Dict[str, Any]]:
@@ -101,8 +121,11 @@ class SessionManager:
         storage_state_data: Optional[Dict[str, Any]] = None,
         set_active: bool = True
     ) -> Dict[str, Any]:
-        """Creates and saves a new session profile permanently."""
-        session_id = f"sess_{int(datetime.now().timestamp())}_{len(self.sessions)}"
+        """Saves a session profile. Signing in again to the same site and account updates it instead of adding a copy."""
+        existing = next((s for s in self.sessions.values()
+                         if (s.get("domain") or "").lower() == (domain or "").lower()
+                         and ((s.get("email") or "").lower() == (email or "").lower() or not s.get("email"))), None)
+        session_id = existing["id"] if existing else f"sess_{int(datetime.now().timestamp())}_{len(self.sessions)}"
         sess_dir = STORAGE_DIR / session_id
         sess_dir.mkdir(parents=True, exist_ok=True)
 
@@ -142,7 +165,8 @@ class SessionManager:
             for s in self.sessions.values():
                 s["is_active"] = False
 
-        record = {
+        record = dict(existing or {})
+        record.update({
             "id": session_id,
             "name": name,
             "email": email,
@@ -152,7 +176,10 @@ class SessionManager:
             "cookie_count": cookie_count,
             "auth_file": str(auth_path),
             "cookies_file": str(cookies_path)
-        }
+        })
+        if existing:
+            record["created_at"] = existing.get("created_at") or record["created_at"]
+            record["updated_at"] = datetime.now().isoformat()
         self.sessions[session_id] = record
         self.save()
 

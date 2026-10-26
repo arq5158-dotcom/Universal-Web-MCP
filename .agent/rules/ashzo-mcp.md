@@ -1,0 +1,11 @@
+# Ashzo MCP rules (Antigravity)
+
+Follow AGENTS.md in the repo root. The essentials:
+
+- New computer: create the desktop app icon (`CREATE_DESKTOP_ICON.bat` on Windows, otherwise `python create_desktop_shortcut.py`) and tell the user: "I added an Ashzo MCP icon to your desktop (<path>). Double-click it to start Ashzo MCP and open the dashboard at http://localhost:8000."
+- Google Flow: GOOGLE_FLOW_SKILL.md sections 0 and 0.5 are mandatory. Generate with `flow_generate_video` (visible Ashzo Browser, live dashboard), poll with `flow_job_status(wait_seconds=45)`, never fake credits, never bypass anti-bot checks.
+- Recreating a video: always VIDEO_RECREATION_SKILL.md, starting with the `study_video` tool.
+- Prefer MCP tools over screenshot/web control (about 50-100x fewer tokens).
+- Everything the user should see is pushed live (`live_broadcaster`); nothing may need a page refresh.
+- UI: dropdowns/popovers are absolute overlays (no layout shift); spinners use `.spin-ring`; theme via `setTheme()`; rebuild CSS with `npm run build:css`; refresh screenshots with `python scripts/capture_screenshots.py`.
+- Security: bind 127.0.0.1, cookies only to their own host, no stdout prints in MCP stdio mode, never commit sessions or cookies.

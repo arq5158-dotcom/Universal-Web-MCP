@@ -3,20 +3,30 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environments
+# Virtual environments and installed packages
 .venv/
 venv/
 ENV/
+node_modules/
 
-# Sensitive user session data & local caches
+# Sensitive user session data & local caches (never commit these)
 session_cookies.json
 flow_auth_state.json
 sessions.json
 saved_sessions/
+learned_routes.json
+.ashzo_browser/
+ashzo_settings.json
 downloads/
-*.png
+logs/
+scripts/_out/
 *.sqlite
 *.db
+
+# Pictures: ignore stray images, but keep the README screenshots and the app icon
+*.png
+!docs/screenshots/*.png
+!assets/*.png
 
 # IDE and OS
 .idea/

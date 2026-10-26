@@ -1,20 +1,33 @@
 """
-Universal Interactive Authentication Helper for Ashzo MCP.
-Opens a visible Google Chrome window on the user's screen for ANY website
-(Google, GitHub, Stripe, Twitter, Notion, Flow, or custom platforms).
-Detects authentication, captures storage state, tokens, and cookies,
-and saves the profile permanently in SessionManager and sessions.json.
+Account sign-in for Ashzo MCP (Google, Google Flow, GitHub, X, or any site).
+
+How it works now:
+  1. The dashboard calls start_login(); it returns at once with a job id.
+  2. The site opens in the Ashzo Browser (a real Chrome window, see browser_hub),
+     so Google sign-in is allowed and you can see exactly what is happening.
+  3. Each step is published live (event type "auth"): opening, waiting for you,
+     signed in, saved, or timed out / cancelled / failed with the reason.
+  4. When the sign-in is detected, the session (cookies + storage) is saved as an
+     account in sessions.json and set active. The browser keeps you signed in too.
+
+run_interactive_login() is kept for the MCP tool: it starts a job and waits for it.
 """
 
-import os
-import sys
-import json
+from __future__ import annotations
+
 import asyncio
+import json
 import logging
-from urllib.parse import urlparse
+import sys
+import time
+import uuid
 from pathlib import Path
-from typing import Optional, Dict, Any
-from playwright.async_api import async_playwright
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
+
+from ashzo_settings import load_settings
+from browser_hub import BrowserLaunchError, hub
+from live_events import live_broadcaster
 from session_manager import session_manager
 
 logger = logging.getLogger("AshzoMCP.AuthFlow")
@@ -23,179 +36,199 @@ BASE_DIR = Path(__file__).resolve().parent
 AUTH_STATE_FILE = BASE_DIR / "flow_auth_state.json"
 SESSION_COOKIES_FILE = BASE_DIR / "session_cookies.json"
 
+GOOGLE_AUTH_COOKIES = {"SID", "__Secure-1PSID", "__Secure-3PSID", "HSID", "SSID"}
 
-async def run_interactive_login(
-    target_url: str = "https://accounts.google.com/",
-    timeout_seconds: int = 180,
-    session_name: Optional[str] = None,
-    expected_email: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Launches a visible Chrome window for ANY target platform.
-    Waits for the user to log in, captures the complete session storage state,
-    and registers it permanently into the SessionManager.
-    """
-    parsed = urlparse(target_url)
-    domain = parsed.netloc or "web"
+_jobs: Dict[str, Dict[str, Any]] = {}
+_current: Optional[str] = None
 
-    print("\n=======================================================")
-    print("[AUTH] Ashzo MCP Universal Platform Login")
-    print(f"Target URL: {target_url} (Domain: {domain})")
-    print(f"Account: {expected_email or 'Custom'}")
-    print(f"Please log into your account in the browser window.")
-    print(f"Waiting up to {timeout_seconds}s for login completion...")
-    print("=======================================================\n")
 
+def _host_matches(cookie_domain: str, host: str) -> bool:
+    d = (cookie_domain or "").lstrip(".").lower()
+    h = (host or "").lower().split(":")[0]  # cookies ignore ports
+    return bool(d) and (h == d or h.endswith("." + d) or d.endswith("." + h))
+
+
+def _is_signed_in(domain: str, url: str, cookies: list) -> bool:
+    url_l = (url or "").lower()
+    if "google" in domain or "google.com" in url_l:
+        google = [c for c in cookies if c.get("name") in GOOGLE_AUTH_COOKIES and len(c.get("value", "")) > 15
+                  and "google" in (c.get("domain") or "")]
+        on_signin = "accounts.google.com" in url_l and ("signin" in url_l or "/v3/" in url_l or "challenge" in url_l)
+        on_landing = "flow.google.com/about" in url_l
+        return len(google) >= 2 and not on_signin and not on_landing
+    if "github.com" in domain:
+        return any(c.get("name") == "user_session" for c in cookies) and "/login" not in url_l
+    host = urlparse(url).netloc or domain
+    own = [c for c in cookies if _host_matches(c.get("domain", ""), host) or _host_matches(c.get("domain", ""), domain)]
+    auth_like = [c for c in own if any(t in c.get("name", "").lower() for t in ("session", "auth", "token", "jwt", "sid"))]
+    on_login = any(k in url_l for k in ("/login", "/signin", "/sign-in", "/auth/"))
+    return bool(auth_like) and not on_login
+
+
+async def _detect_email(page) -> Optional[str]:
     try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                channel="chrome",
-                headless=False,
-                args=["--no-first-run", "--no-default-browser-check"]
-            )
-            context = await browser.new_context(
-                viewport={"width": 1440, "height": 900}
-            )
-            page = await context.new_page()
+        return await page.evaluate(r"""() => {
+            const rx = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+            for (const el of document.querySelectorAll('[aria-label],[title],[data-email]')) {
+                const s = (el.getAttribute('aria-label') || '') + ' ' + (el.getAttribute('title') || '') + ' ' + (el.getAttribute('data-email') || '');
+                const m = s.match(rx);
+                if (m) return m[1];
+            }
+            return null;
+        }""")
+    except Exception:
+        return None
 
-            await page.goto(target_url)
 
-            logged_in = False
-            start_time = asyncio.get_event_loop().time()
-            extracted_email = expected_email
+def _status(job: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: v for k, v in job.items() if not k.startswith("_")}
 
-            while (asyncio.get_event_loop().time() - start_time) < timeout_seconds:
-                # If user closed the page manually after logging in
-                if page.is_closed():
-                    print("[AUTH] Browser page was closed by user. Capturing current state...")
-                    logged_in = True
-                    break
 
-                current_url = page.url
-                cookies = await context.cookies()
+async def _publish(job: Dict[str, Any], phase: str, message: str, **extra: Any) -> None:
+    job["phase"] = phase
+    job["message"] = message
+    job.update(extra)
+    # Sign-in has its own live panel (the Connect dialog); it never takes over the generation HUD.
+    await live_broadcaster.broadcast("auth", message, data={"kind": "login", **_status(job)})
 
-                # 1. Google Authentication Detection
-                if "google" in domain.lower() or "google" in current_url:
-                    auth_cookies = [
-                        c for c in cookies
-                        if c["name"] in ["SID", "__Secure-1PSID", "__Secure-3PSID", "HSID", "SSID"] and len(c.get("value", "")) > 15
-                    ]
-                    is_on_landing = "flow.google.com/about" in current_url
-                    is_on_signin = "accounts.google.com/v3/signin" in current_url or "accounts.google.com/signin" in current_url
 
-                    if len(auth_cookies) >= 2 and not is_on_signin and not is_on_landing:
-                        print(f"[AUTH] Google authentication detected on: {current_url}")
-                        await page.wait_for_timeout(3000)
-                        logged_in = True
-                        break
+async def _run(job: Dict[str, Any]) -> None:
+    global _current
+    domain = job["domain"]
+    page = None
+    try:
+        await _publish(job, "opening", f"Opening {domain} in the Ashzo Browser…")
+        try:
+            page = await hub.open_page(job["target_url"], reuse_host=False, front=True)
+        except BrowserLaunchError as e:
+            await _publish(job, "error", str(e))
+            return
+        await hub.start_screencast(page)
+        timeout = int(job["timeout"])
+        deadline = time.time() + timeout
+        job["deadline"] = int(deadline * 1000)
+        await _publish(job, "waiting", "Sign in on the Chrome window that just opened. This updates by itself.")
 
-                # 2. GitHub Authentication Detection
-                elif "github.com" in domain.lower():
-                    has_session = any(c["name"] == "user_session" for c in cookies)
-                    if has_session and "/login" not in current_url:
-                        print(f"[AUTH] GitHub authentication detected on: {current_url}")
-                        logged_in = True
-                        break
+        signed_in = False
+        while time.time() < deadline:
+            if job.get("_cancel"):
+                await _publish(job, "cancelled", "Sign-in cancelled.")
+                return
+            if page.is_closed():
+                cookies = await page.context.cookies()
+                signed_in = _is_signed_in(domain, job["target_url"], cookies)
+                if not signed_in:
+                    await _publish(job, "cancelled", "The sign-in tab was closed before you finished.")
+                    return
+                break
+            cookies = await page.context.cookies()
+            if _is_signed_in(domain, page.url, cookies):
+                signed_in = True
+                break
+            await asyncio.sleep(1.5)
 
-                # 3. Generic Universal Platform Detection
-                else:
-                    # Look for session/auth token cookies and navigation past /login /signin
-                    generic_auth = [
-                        c for c in cookies
-                        if any(token in c["name"].lower() for token in ["session", "auth", "token", "jwt", "sid"])
-                    ]
-                    is_login_page = any(kw in current_url.lower() for kw in ["/login", "/signin", "/auth/login"])
-                    if len(generic_auth) >= 1 and not is_login_page and len(cookies) >= 3:
-                        print(f"[AUTH] Session cookies captured on: {current_url}")
-                        await page.wait_for_timeout(2000)
-                        logged_in = True
-                        break
+        if not signed_in:
+            await _publish(job, "timeout", f"No sign-in after {timeout // 60} minutes. Press Try again when you're ready.")
+            return
 
-                await asyncio.sleep(2)
-
-            if not logged_in and not page.is_closed():
-                await browser.close()
-                return {
-                    "status": "timeout",
-                    "message": f"Login timed out after {timeout_seconds}s for {domain}. Please try again."
-                }
-
-            # Attempt to extract email if page is still open
-            if not page.is_closed():
-                try:
-                    detected_email = await page.evaluate('''() => {
-                        for (const el of document.querySelectorAll('[aria-label]')) {
-                            const aria = el.getAttribute('aria-label') || '';
-                            const m = aria.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/);
-                            if (m) return m[1];
-                        }
-                        const accEl = document.querySelector('a[href*="SignOutOptions"], [aria-label*="Google Account"], [aria-label*="profile" i]');
-                        if (accEl) {
-                            const m = (accEl.getAttribute('aria-label') || '').match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/);
-                            if (m) return m[1];
-                        }
-                        return null;
-                    }''')
-                    if detected_email:
-                        extracted_email = detected_email
-                        print(f"[AUTH] Extracted account identity: {extracted_email}")
-                except Exception:
-                    pass
-
-            # Save complete storage state
-            await context.storage_state(path=str(AUTH_STATE_FILE))
-            all_cookies = await context.cookies()
-            cookies_dict = {c["name"]: c["value"] for c in all_cookies}
-            with open(SESSION_COOKIES_FILE, "w", encoding="utf-8") as f:
-                json.dump(cookies_dict, f, indent=2)
-
-            final_email = extracted_email or expected_email or f"user@{domain}"
-            final_name = session_name or f"{domain.capitalize()} ({final_email})"
-
-            storage_state_data = None
+        await _publish(job, "saving", "Signed in. Saving your session…")
+        await asyncio.sleep(1.5)  # let the site finish setting its cookies
+        email = (await _detect_email(page)) if not page.is_closed() else None
+        email = email or job.get("expected_email") or ""
+        state = await page.context.storage_state()
+        cookies_dict = {c["name"]: c["value"] for c in state.get("cookies", [])
+                        if _host_matches(c.get("domain", ""), domain) or ("google" in domain and "google" in c.get("domain", ""))}
+        AUTH_STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+        SESSION_COOKIES_FILE.write_text(json.dumps(cookies_dict, indent=2), encoding="utf-8")
+        label = email or domain
+        record = session_manager.add_session(
+            name=job.get("session_name") or f"{domain} ({label})",
+            email=email,
+            domain=domain,
+            cookies_dict=cookies_dict,
+            storage_state_data=state,
+            set_active=True,
+        )
+        await _publish(job, "success", f"Connected {label}.", session_id=record["id"], email=email,
+                       cookies_captured=len(cookies_dict))
+    except asyncio.CancelledError:
+        await _publish(job, "cancelled", "Sign-in cancelled.")
+    except Exception as e:  # never leave the dashboard spinning
+        logger.exception("Login failed")
+        await _publish(job, "error", f"Sign-in failed: {e}")
+    finally:
+        if page is not None:
             try:
-                with open(AUTH_STATE_FILE, "r", encoding="utf-8") as f:
-                    storage_state_data = json.load(f)
+                await hub.stop_screencast(page)
             except Exception:
                 pass
-
-            sess_record = session_manager.add_session(
-                name=final_name,
-                email=final_email,
-                domain=domain,
-                cookies_dict=cookies_dict,
-                storage_state_data=storage_state_data,
-                set_active=True
-            )
-
-            if not page.is_closed():
-                await browser.close()
-
-            print(f"[AUTH] Saved session profile: {sess_record['id']} ({len(cookies_dict)} cookies)")
-
-            return {
-                "status": "success",
-                "session_id": sess_record["id"],
-                "session_name": sess_record["name"],
-                "email": final_email,
-                "domain": domain,
-                "cookies_captured": len(cookies_dict),
-                "message": f"Successfully connected {final_email} on {domain}! Captured {len(cookies_dict)} session cookies."
-            }
-
-    except Exception as e:
-        logger.error(f"Authentication error: {e}")
-        return {
-            "status": "error",
-            "message": f"Authentication error: {str(e)}"
-        }
+        job["finished_at"] = int(time.time() * 1000)
+        if _current == job["id"]:
+            _current = None
 
 
-def main():
+async def start_login(target_url: str = "https://accounts.google.com/", expected_email: Optional[str] = None,
+                      timeout_seconds: Optional[int] = None, session_name: Optional[str] = None) -> Dict[str, Any]:
+    """Start a sign-in and return immediately. Progress arrives as live "auth" events."""
+    global _current
+    if _current and _jobs.get(_current, {}).get("phase") in ("opening", "waiting", "saving"):
+        return {"status": "busy", "message": "A sign-in is already open in the Ashzo Browser.", "job": _status(_jobs[_current])}
+    if not target_url.startswith(("http://", "https://")):
+        target_url = "https://" + target_url
+    domain = urlparse(target_url).netloc or "web"
+    job = {
+        "id": uuid.uuid4().hex[:10],
+        "target_url": target_url,
+        "domain": domain,
+        "expected_email": (expected_email or "").strip(),
+        "session_name": session_name,
+        "timeout": int(timeout_seconds or load_settings().get("login_timeout_seconds", 300)),
+        "phase": "starting",
+        "message": "Starting…",
+        "started_at": int(time.time() * 1000),
+    }
+    _jobs[job["id"]] = job
+    _current = job["id"]
+    job["_task"] = asyncio.create_task(_run(job))
+    return {"status": "started", "job": _status(job)}
+
+
+async def cancel_login(job_id: Optional[str] = None) -> Dict[str, Any]:
+    jid = job_id or _current
+    job = _jobs.get(jid or "")
+    if not job:
+        return {"status": "none"}
+    job["_cancel"] = True
+    return {"status": "cancelling", "job": _status(job)}
+
+
+def login_status(job_id: Optional[str] = None) -> Dict[str, Any]:
+    jid = job_id or _current
+    if jid and jid in _jobs:
+        return _status(_jobs[jid])
+    if _jobs:
+        return _status(list(_jobs.values())[-1])
+    return {"phase": "idle"}
+
+
+async def run_interactive_login(target_url: str = "https://accounts.google.com/", timeout_seconds: int = 300,
+                                session_name: Optional[str] = None, expected_email: Optional[str] = None) -> Dict[str, Any]:
+    """Blocking variant for MCP tools and the command line: start a sign-in and wait for its result."""
+    started = await start_login(target_url, expected_email, timeout_seconds, session_name)
+    if started.get("status") == "busy":
+        return started
+    job = _jobs[started["job"]["id"]]
+    await job["_task"]
+    result = _status(job)
+    result["status"] = {"success": "success", "timeout": "timeout", "cancelled": "cancelled"}.get(job["phase"], "error")
+    return result
+
+
+def main() -> None:
     target = sys.argv[1] if len(sys.argv) > 1 else "https://accounts.google.com/"
     email = sys.argv[2] if len(sys.argv) > 2 else None
     res = asyncio.run(run_interactive_login(target_url=target, expected_email=email))
-    print("\nResult:", json.dumps(res, indent=2))
+    sys.stderr.write(json.dumps(res, indent=2) + "\n")
 
 
 if __name__ == "__main__":

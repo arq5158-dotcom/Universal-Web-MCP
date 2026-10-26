@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070709">
+  <title>Ashzo MCP · Studio</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <script src="/static/theme-init.js"></script>
+  <link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/static/vendor/fa/css/all.min.css">
+  <link rel="stylesheet" href="/static/vendor/tailwind.css">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="ashzo-mesh min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="ashzo-border border-b backdrop-blur-xl sticky top-0 z-40 ashzo-header">
+    <div class="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between gap-3">
+      <a href="/" class="flex items-center gap-2.5 select-none">
+        <svg class="w-7 h-7 flex-none" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="ashzo-body" x1="24" y1="20" x2="96" y2="92" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#38bdf8"/><stop offset=".4" stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+            <linearGradient id="ashzo-curl" x1="24" y1="40" x2="52" y2="76" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0f172a" stop-opacity=".65"/><stop offset="1" stop-color="#0f172a" stop-opacity="0"/></linearGradient>
+            <linearGradient id="ashzo-bars" x1="58" y1="46" x2="98" y2="70" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#38bdf8"/><stop offset=".6" stop-color="#60a5fa"/><stop offset="1" stop-color="#818cf8"/></linearGradient>
+          </defs>
+          <path d="M57 16C53.5 16 49.5 20.5 45.5 29L25 73.5C21 81.5 24.5 90 33.5 90c6 0 11-4.5 15-11.5l7-14c1-2 4-2 5 0l7 14c4 7 9 11.5 15 11.5 9 0 12.5-8.5 8.5-16.5L70.5 29C66.5 20.5 62.5 16 57 16Z" fill="url(#ashzo-body)"/>
+          <path d="M45.5 29 25 73.5C21 81.5 24.5 90 33.5 90c6 0 11-4.5 15-11.5L57 60c1-5-3-13-7-21Z" fill="url(#ashzo-curl)" opacity=".75"/>
+          <path d="M54.5 42c0-2 2.3-3.2 4-2.2l14 8.7c1.7 1 1.7 3.7 0 4.7l-14 8.7c-1.7 1-4-.2-4-2.2Z" fill="#fff"/>
+          <g class="logo-bars" fill="url(#ashzo-bars)"><rect x="67" y="42" width="28" height="5.5" rx="2.75"/><rect x="61" y="51" width="37" height="5.5" rx="2.75"/><rect x="61" y="60" width="28" height="5.5" rx="2.75"/></g>
+        </svg>
+        <span class="font-semibold text-sm tracking-tight flex items-center gap-1.5">
+          Ashzo MCP
+          <span id="versionBadge" class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v4.3</span>
+        </span>
+      </a>
+
+      <div class="flex items-center gap-2">
+        <!-- Live connection -->
+        <div id="liveConn" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full ashzo-card-sub text-[10px] font-mono" title="Live updates">
+          <span id="liveConnDot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span id="liveConnText" class="ashzo-text-dim">Connecting…</span>
+        </div>
+
+        <!-- Active account -->
+        <button type="button" onclick="switchTab('sessions')" id="activeSessionBadge" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full ashzo-card-sub text-xs font-mono hover:scale-[1.02] transition-transform">
+          <span id="activeDot" class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+          <span id="activeAccountName" class="font-medium ashzo-text-muted truncate max-w-[170px]">Not connected</span>
+        </button>
+
+        <!-- Theme: light / dark / system with a circular reveal (same as the Ashzo app) -->
+        <div class="theme-toggle" role="radiogroup" aria-label="Theme">
+          <button type="button" role="radio" data-theme-opt="light" aria-label="Light theme" title="Light"><i class="fa-solid fa-sun"></i></button>
+          <button type="button" role="radio" data-theme-opt="dark" aria-label="Dark theme" title="Dark"><i class="fa-solid fa-moon"></i></button>
+          <button type="button" role="radio" data-theme-opt="system" aria-label="Use system theme" title="System"><i class="fa-solid fa-desktop"></i></button>
+        </div>
+
+        <button type="button" onclick="openSettings()" class="w-8 h-8 rounded-full ashzo-card-sub flex items-center justify-center ashzo-text-muted hover:text-indigo-400 transition" title="Settings" aria-label="Settings">
+          <i class="fa-solid fa-gear text-xs"></i>
+        </button>
+
+        <button type="button" onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-plus text-[10px]"></i><span>Connect</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="ashzo-border border-b">
+    <div class="max-w-7xl mx-auto px-5 flex items-center gap-1 overflow-x-auto">
+      <button type="button" onclick="switchTab('flow')" id="tab-btn-flow" class="tab-btn is-active"><i class="fa-solid fa-video"></i><span>Google Flow</span></button>
+      <button type="button" onclick="switchTab('sessions')" id="tab-btn-sessions" class="tab-btn"><i class="fa-solid fa-users"></i><span>Accounts</span></button>
+      <button type="button" onclick="switchTab('learner')" id="tab-btn-learner" class="tab-btn"><i class="fa-solid fa-compass"></i><span>Explorer</span></button>
+      <button type="button" onclick="switchTab('playground')" id="tab-btn-playground" class="tab-btn"><i class="fa-solid fa-bolt"></i><span>Fast Path</span></button>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl w-full mx-auto px-5 py-5 flex-1">
+
+    <!-- ============================== FLOW STUDIO ============================== -->
+    <section id="tab-flow" class="tab-content tab-animating space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Generator -->
+        <div class="lg:col-span-7">
+          <div class="ashzo-glass rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between border-b ashzo-border pb-3 gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold tracking-tight uppercase font-mono">Google Flow</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Omni Flash &amp; Veo</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs font-mono">
+                <div class="flex items-center gap-2 px-3 py-1 rounded-full ashzo-card-sub border ashzo-border" title="Google Flow credits of the active account">
+                  <span id="creditsDot" class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                  <span class="ashzo-text-dim text-[11px]">Credits</span>
+                  <span id="creditsValue" class="font-semibold">—</span>
+                  <span id="creditsTier" class="hidden text-[9px] uppercase px-1 rounded bg-indigo-500/10 text-indigo-400 font-semibold"></span>
+                </div>
+                <button type="button" onclick="refreshCredits()" id="refreshCreditsBtn" class="w-7 h-7 rounded-full ashzo-card-sub border ashzo-border ashzo-text-dim hover:text-emerald-400 active:scale-95 transition flex items-center justify-center text-[10px]" title="Check credits now" aria-label="Check credits now">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Live job HUD -->
+            <div class="ashzo-card-sub rounded-xl p-3 border ashzo-border space-y-2 relative" id="agentLiveHud">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span id="hudIcon" class="hud-icon"><span class="w-1.5 h-1.5 rounded-full volt-dot"></span></span>
+                  <span class="text-xs font-mono font-medium truncate" id="liveAgentStage">Agent standby</span>
+                  <span class="text-[9px] font-mono px-1.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" id="liveAgentBadge">IDLE</span>
+                  <span class="text-[10px] font-mono ashzo-text-dim tabular-nums" id="liveElapsed"></span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" id="cancelJobBtn" onclick="cancelJob()" class="hidden text-[10px] font-mono px-2 py-0.5 rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 active:scale-95 transition">Cancel</button>
+                  <div class="popover-anchor">
+                    <button type="button" onclick="toggleFeedPanel('feedPopover', event)" class="text-[10px] font-mono ashzo-text-dim hover:text-indigo-400 flex items-center gap-1.5 transition" aria-haspopup="true">
+                      <i class="fa-solid fa-terminal text-[9px]"></i><span>Activity</span>
+                      <span id="feedCount" class="hidden text-[9px] px-1 rounded bg-indigo-500/15 text-indigo-400">0</span>
+                      <i class="fa-solid fa-chevron-down text-[8px] chevron"></i>
+                    </button>
+                    <!-- Overlay: floats above the page, never pushes the layout -->
+                    <div id="feedPopover" class="popover ashzo-glass rounded-xl border ashzo-border shadow-2xl">
+                      <div class="flex items-center justify-between px-3 pt-2.5 pb-2 border-b ashzo-border">
+                        <span class="text-[10px] font-mono uppercase tracking-wider ashzo-text-dim">Live activity</span>
+                        <button type="button" onclick="clearFeed()" class="text-[10px] font-mono ashzo-text-dim hover:text-indigo-400">Clear</button>
+                      </div>
+                      <div id="terminalLogs" class="max-h-72 overflow-y-auto custom-scrollbar font-mono text-[10.5px] space-y-1 p-3"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="w-full rounded-full h-1 overflow-hidden progress-track">
+                <div id="liveProgressBar" class="h-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-500" style="width: 0%"></div>
+              </div>
+              <p id="liveStatusText" class="text-[10.5px] font-mono ashzo-text-dim truncate">Standby. Progress shows here by itself, no refresh needed.</p>
+            </div>
+
+            <!-- Model / Quality / Aspect -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="field-label">Model</label>
+                <div class="custom-dropdown mt-1" id="dropdown-model" data-value="omni_flash">
+                  <button type="button" class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" aria-haspopup="listbox">
+                    <span data-display>Gemini Omni Flash</span><i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+                  </button>
+                  <div class="dropdown-menu rounded-xl p-1.5" role="listbox">
+                    <div class="dropdown-item is-selected" role="option" data-value="omni_flash" data-label="Gemini Omni Flash"><span>Gemini Omni Flash</span><span class="text-[9px] ashzo-text-dim">4–10s</span></div>
+                    <div class="dropdown-item" role="option" data-value="veo_3_1" data-label="Google Veo 3.1"><span>Google Veo 3.1</span><span class="text-[9px] ashzo-text-dim">4–8s</span></div>
+                    <div class="dropdown-item" role="option" data-value="gemini_omni" data-label="Gemini Omni"><span>Gemini Omni</span><span class="text-[9px] ashzo-text-dim">4–10s</span></div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Download</label>
+                <div class="custom-dropdown mt-1" id="dropdown-quality" data-value="1080p">
+                  <button type="button" class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" aria-haspopup="listbox">
+                    <span data-display>1080p Upscaled</span><i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+                  </button>
+                  <div class="dropdown-menu rounded-xl p-1.5" role="listbox">
+                    <div class="dropdown-item is-selected" role="option" data-value="1080p" data-label="1080p Upscaled"><span>1080p Upscaled</span><span class="text-[9px] ashzo-text-dim">FHD</span></div>
+                    <div class="dropdown-item" role="option" data-value="720p" data-label="720p Original"><span>720p Original</span><span class="text-[9px] ashzo-text-dim">Fast</span></div>
+                    <div class="dropdown-item" role="option" data-value="4k" data-label="4K Upscaled"><span>4K Upscaled</span><span class="text-[9px] ashzo-text-dim">Ultra</span></div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Aspect</label>
+                <div class="custom-dropdown mt-1" id="dropdown-aspect" data-value="9:16">
+                  <button type="button" class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" aria-haspopup="listbox">
+                    <span data-display>9:16 Vertical</span><i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+                  </button>
+                  <div class="dropdown-menu rounded-xl p-1.5" role="listbox">
+                    <div class="dropdown-item is-selected" role="option" data-value="9:16" data-label="9:16 Vertical"><span>9:16 Vertical</span><span class="text-[9px] ashzo-text-dim">Reels</span></div>
+                    <div class="dropdown-item" role="option" data-value="16:9" data-label="16:9 Wide"><span>16:9 Wide</span><span class="text-[9px] ashzo-text-dim">YouTube</span></div>
+                    <div class="dropdown-item" role="option" data-value="1:1" data-label="1:1 Square"><span>1:1 Square</span><span class="text-[9px] ashzo-text-dim">Feed</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Duration -->
+            <div>
+              <label class="field-label">Duration</label>
+              <div id="durationPills" class="flex flex-wrap gap-1.5 mt-1.5"></div>
+            </div>
+
+            <!-- Reference frames -->
+            <div>
+              <div class="flex items-center justify-between">
+                <label class="field-label">Reference frames <span class="normal-case tracking-normal">· optional</span></label>
+                <span class="text-[9.5px] font-mono ashzo-text-dim">Image files or Flow asset names</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5 mt-1.5">
+                <div class="ref-slot" id="ref-first" data-role="first">
+                  <button type="button" class="ref-drop" onclick="pickReference('first')" aria-label="Choose first frame image">
+                    <img alt="" class="hidden">
+                    <span class="ref-empty"><i class="fa-regular fa-image"></i><span>First frame</span></span>
+                  </button>
+                  <button type="button" class="ref-clear hidden" onclick="clearReference('first')" aria-label="Remove first frame"><i class="fa-solid fa-xmark"></i></button>
+                  <input id="startFrame" type="text" placeholder="or Flow asset name" class="mt-1.5 w-full ashzo-input rounded-lg px-2 py-1 text-[11px] font-mono">
+                </div>
+                <div class="ref-slot" id="ref-last" data-role="last">
+                  <button type="button" class="ref-drop" onclick="pickReference('last')" aria-label="Choose last frame image">
+                    <img alt="" class="hidden">
+                    <span class="ref-empty"><i class="fa-regular fa-image"></i><span>Last frame</span></span>
+                  </button>
+                  <button type="button" class="ref-clear hidden" onclick="clearReference('last')" aria-label="Remove last frame"><i class="fa-solid fa-xmark"></i></button>
+                  <input id="endFrame" type="text" placeholder="or Flow asset name" class="mt-1.5 w-full ashzo-input rounded-lg px-2 py-1 text-[11px] font-mono">
+                </div>
+              </div>
+              <input type="file" id="refFileInput" accept="image/*" class="hidden">
+            </div>
+
+            <!-- Prompt -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="field-label">Prompt</label>
+                <div class="flex gap-1">
+                  <button type="button" onclick="appendTag('Cinematic 35mm lens')" class="chip-btn">+ 35mm</button>
+                  <button type="button" onclick="appendTag('FPV drone push-in, volumetric lighting')" class="chip-btn">+ FPV</button>
+                  <button type="button" onclick="appendTag('Smooth dolly out, golden hour')" class="chip-btn">+ Dolly</button>
+                </div>
+              </div>
+              <textarea id="promptInput" rows="4" class="w-full ashzo-input rounded-xl p-3 text-xs font-mono" placeholder="Describe the scene, or paste a prompt from your kit…"></textarea>
+            </div>
+
+            <div class="flex items-center gap-2.5 pt-1">
+              <input id="slugInput" type="text" value="" placeholder="Video name (e.g. lia_shed_clip1)" class="flex-1 min-w-0 ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
+              <button id="genBtn" type="button" onclick="submitGeneration()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-60 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-play text-[9px]"></i><span>Generate video</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live view + vault -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="ashzo-glass rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-xs font-mono uppercase tracking-wider font-semibold">Live</span>
+                <span id="liveViewState" class="text-[10px] font-mono ashzo-text-dim truncate">Idle</span>
+              </div>
+              <div class="segmented" role="tablist" aria-label="Live view">
+                <button type="button" role="tab" aria-selected="true" data-live-tab="screen" onclick="setLiveTab('screen')">Screen</button>
+                <button type="button" role="tab" aria-selected="false" data-live-tab="chat" onclick="setLiveTab('chat')">Flow chat <span id="chatCount" class="hidden"></span></button>
+              </div>
+            </div>
+            <div id="live-screen" class="live-pane">
+              <div class="screen-frame">
+                <img id="screenImg" alt="Live view of the Ashzo Browser" class="hidden">
+                <div id="screenEmpty" class="screen-empty">
+                  <i class="fa-regular fa-eye text-lg"></i>
+                  <p>When an agent works in Google Flow, you watch it here live.</p>
+                  <button type="button" onclick="peekBrowser()" class="chip-btn">Look at the Ashzo Browser now</button>
+                </div>
+                <div id="screenUrl" class="screen-url hidden"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-[10px] font-mono ashzo-text-dim" id="screenHint">Mirror of the Ashzo Browser window.</span>
+                <button type="button" onclick="showBrowserWindow()" class="text-[10px] font-mono ashzo-text-dim hover:text-indigo-400 flex items-center gap-1"><i class="fa-solid fa-up-right-from-square text-[9px]"></i>Show window</button>
+              </div>
+            </div>
+            <div id="live-chat" class="live-pane hidden">
+              <div id="chatList" class="chat-list custom-scrollbar">
+                <p class="text-[11px] font-mono ashzo-text-dim text-center py-8" id="chatEmpty">Flow's agent replies appear here as they arrive.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="ashzo-glass rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between border-b ashzo-border pb-2.5 mb-2.5">
+              <span class="text-xs font-mono uppercase tracking-wider font-semibold">Vault</span>
+              <span class="text-[10px] font-mono ashzo-text-dim" id="vaultCount"></span>
+            </div>
+            <div id="downloadsList" class="space-y-2 overflow-auto custom-scrollbar max-h-[300px]"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generations (live cards, like a creation history) -->
+      <div class="ashzo-glass rounded-2xl p-5">
+        <div class="flex items-center justify-between border-b ashzo-border pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono uppercase tracking-wider font-semibold">Generations</span>
+            <span class="text-[10px] font-mono ashzo-text-dim">Live: prompts, references, Flow's replies and results from you and your agents</span>
+          </div>
+        </div>
+        <div id="generationsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <p id="generationsEmpty" class="text-xs ashzo-text-dim font-mono text-center py-10">No generations yet. Start one above, or ask your agent to use the flow_generate_video tool.</p>
+      </div>
+    </section>
+
+    <!-- ============================== ACCOUNTS ============================== -->
+    <section id="tab-sessions" class="tab-content hidden space-y-5">
+      <div class="ashzo-glass rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b ashzo-border pb-3">
+          <h2 class="text-xs font-mono uppercase tracking-wider font-semibold">Saved accounts</h2>
+          <button type="button" onclick="openLoginModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus text-[9px]"></i><span>Add account</span>
+          </button>
+        </div>
+        <div id="sessionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+      <div class="ashzo-glass rounded-2xl p-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xs font-mono uppercase tracking-wider font-semibold">Ashzo Browser</h2>
+          <p class="text-[11px] ashzo-text-dim mt-1 max-w-xl">A separate Chrome window with its own profile. Agents work in it, you can watch it, and it stays signed in. Your everyday Chrome is never touched.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="browserStatus" class="text-[10px] font-mono ashzo-text-dim">Checking…</span>
+          <button type="button" onclick="showBrowserWindow()" class="text-xs font-medium px-3.5 py-1.5 rounded-full border ashzo-border hover:border-indigo-500/50 active:scale-95 transition">Open window</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== EXPLORER ============================== -->
+    <section id="tab-learner" class="tab-content hidden space-y-4">
+      <div class="ashzo-glass rounded-2xl p-5 space-y-4">
+        <h2 class="text-xs font-mono uppercase tracking-wider font-semibold border-b ashzo-border pb-3">Platform explorer</h2>
+        <div class="flex gap-2">
+          <input id="learnerUrl" type="url" value="https://flow.google.com/" placeholder="Website URL…" class="flex-1 min-w-0 ashzo-input rounded-xl px-3.5 py-2 text-xs font-mono">
+          <button id="learnerBtn" type="button" onclick="runLearner()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-60 text-white font-medium text-xs px-4 py-2 rounded-xl transition whitespace-nowrap">Explore</button>
+        </div>
+        <div class="ashzo-card-sub rounded-xl p-3.5 text-xs font-mono space-y-2">
+          <div class="flex justify-between items-center">
+            <span id="learnerPhase" class="font-semibold text-emerald-400">Ready</span>
+            <span id="learnerPct" class="ashzo-text-dim tabular-nums">—</span>
+          </div>
+          <div class="w-full rounded-full h-1 overflow-hidden progress-track"><div id="learnerBar" class="bg-indigo-500 h-1 transition-all duration-300" style="width: 0%"></div></div>
+          <p id="learnerText" class="ashzo-text-dim text-[11px]">Maps a site's pages, controls and APIs into a skill file.</p>
+        </div>
+      </div>
+
+      <div class="ashzo-glass rounded-2xl p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b ashzo-border pb-3">
+          <div>
+            <h2 class="text-xs font-mono uppercase tracking-wider font-semibold">Learn Flow's API</h2>
+            <p class="text-[11px] ashzo-text-dim mt-1 max-w-2xl">Press Record, make one video by hand in the Ashzo Browser (prompt, references, send), then press Stop. Ashzo saves the exact requests Flow's site sends, with secrets masked, so you can check whether Flow can be driven through its API instead of the page.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="recorderState" class="text-[10px] font-mono ashzo-text-dim">Not recording</span>
+            <button type="button" id="recorderBtn" onclick="toggleRecorder()" class="text-xs font-medium px-3.5 py-1.5 rounded-full border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 active:scale-95 transition flex items-center gap-1.5"><i class="fa-solid fa-circle text-[8px]"></i><span>Record</span></button>
+          </div>
+        </div>
+        <div id="recorderList" class="max-h-56 overflow-y-auto custom-scrollbar font-mono text-[10.5px] space-y-1">
+          <p class="ashzo-text-dim">Captured requests appear here live.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== FAST PATH ============================== -->
+    <section id="tab-playground" class="tab-content hidden space-y-4">
+      <div class="ashzo-glass rounded-2xl p-5 space-y-4">
+        <h2 class="text-xs font-mono uppercase tracking-wider font-semibold border-b ashzo-border pb-3">3-tier hybrid fast path</h2>
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <input id="runnerUrl" type="url" value="https://jsonplaceholder.typicode.com/todos/1" class="flex-1 min-w-0 ashzo-input rounded-xl px-3.5 py-2 text-xs font-mono">
+          <div class="custom-dropdown sm:w-56" id="dropdown-tier" data-value="1">
+            <button type="button" class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" aria-haspopup="listbox">
+              <span data-display>Tier 1: Fast Path</span><i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+            </button>
+            <div class="dropdown-menu rounded-xl p-1.5" role="listbox">
+              <div class="dropdown-item is-selected" role="option" data-value="1" data-label="Tier 1: Fast Path"><span>Tier 1: Fast Path</span><span class="text-[9px] text-emerald-400">&lt;200ms</span></div>
+              <div class="dropdown-item" role="option" data-value="2" data-label="Tier 2: CDP Sniffer"><span>Tier 2: CDP Sniffer</span><span class="text-[9px] text-indigo-400">Sniff</span></div>
+              <div class="dropdown-item" role="option" data-value="3" data-label="Tier 3: DOM Fallback"><span>Tier 3: DOM Fallback</span><span class="text-[9px] text-amber-400">Tokens</span></div>
+            </div>
+          </div>
+          <button type="button" id="runBtn" onclick="runRequest()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-60 text-white font-medium text-xs px-4 py-2 rounded-xl transition">Run</button>
+        </div>
+        <pre id="runnerOutput" class="p-3 rounded-xl ashzo-card-sub text-xs font-mono ashzo-text-muted max-h-80 overflow-auto custom-scrollbar"><code>Output appears here.</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-[70] flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Rename -->
+  <div id="renameModal" class="modal-overlay" onclick="backdropClose(event, 'renameModal')">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-sm w-full p-5 space-y-3" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
+      <h3 id="renameTitle" class="text-xs font-semibold uppercase tracking-wider font-mono">Rename video</h3>
+      <input id="newFilenameInput" type="text" class="w-full ashzo-input rounded-lg px-3 py-2 text-xs font-mono">
+      <input id="oldFilepathInput" type="hidden">
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeModal('renameModal')" class="text-xs ashzo-text-dim px-3 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button type="button" onclick="saveRename()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div id="confirmModal" class="modal-overlay" onclick="backdropClose(event, 'confirmModal')">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-sm w-full p-5 space-y-3" role="alertdialog" aria-modal="true">
+      <h3 id="confirmTitle" class="text-sm font-semibold">Are you sure?</h3>
+      <p id="confirmText" class="text-xs ashzo-text-muted"></p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="resolveConfirm(false)" class="text-xs ashzo-text-dim px-3 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button type="button" id="confirmOk" onclick="resolveConfirm(true)" class="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs px-3.5 py-1.5 rounded-lg font-medium transition">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div id="settingsModal" class="modal-overlay" onclick="backdropClose(event, 'settingsModal')">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-md w-full p-5 space-y-4" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="flex items-center justify-between border-b ashzo-border pb-2.5">
+        <h3 id="settingsTitle" class="text-xs font-semibold uppercase tracking-wider font-mono">Settings</h3>
+        <button type="button" onclick="closeModal('settingsModal')" class="ashzo-text-dim hover:text-indigo-400 p-1" aria-label="Close"><i class="fa-solid fa-xmark text-xs"></i></button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="field-label" for="setProjectUrl">Google Flow project link</label>
+          <input id="setProjectUrl" type="url" placeholder="https://flow.google.com/project/…" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
+          <p class="text-[10px] ashzo-text-dim mt-1">Open your project in Flow and paste its address. Videos are generated there.</p>
+        </div>
+        <label class="flex items-center justify-between gap-3 ashzo-card-sub rounded-xl px-3 py-2.5 cursor-pointer">
+          <span><span class="font-medium">Show the Ashzo Browser window</span><span class="block text-[10px] ashzo-text-dim">Watch the agent work. Off runs it hidden (Live View still works).</span></span>
+          <input id="setVisible" type="checkbox" class="switch">
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="field-label" for="setRenderTimeout">Render timeout (min)</label><input id="setRenderTimeout" type="number" min="2" max="60" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono"></div>
+          <div><label class="field-label" for="setLoginTimeout">Sign-in timeout (min)</label><input id="setLoginTimeout" type="number" min="1" max="30" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono"></div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t ashzo-border">
+        <button type="button" onclick="closeModal('settingsModal')" class="text-xs ashzo-text-dim px-3.5 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button type="button" onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs px-4 py-1.5 rounded-xl transition">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connect account -->
+  <div id="loginModal" class="modal-overlay" onclick="backdropClose(event, 'loginModal')">
+    <div class="modal-dialog ashzo-glass rounded-2xl max-w-md w-full p-5 space-y-4" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="flex items-center justify-between border-b ashzo-border pb-2.5">
+        <h3 id="loginTitle" class="text-xs font-semibold uppercase tracking-wider font-mono">Connect account</h3>
+        <button type="button" onclick="closeLoginModal()" class="ashzo-text-dim hover:text-indigo-400 p-1" aria-label="Close"><i class="fa-solid fa-xmark text-xs"></i></button>
+      </div>
+
+      <!-- Step 1: form -->
+      <div id="loginForm" class="space-y-3 text-xs">
+        <div>
+          <label class="field-label">Platform</label>
+          <div class="custom-dropdown mt-1" id="dropdown-platform" data-value="https://flow.google.com/">
+            <button type="button" class="dropdown-trigger ashzo-input rounded-xl px-3 py-2 text-xs font-mono" aria-haspopup="listbox">
+              <span data-display><i class="fa-solid fa-video mr-1.5 text-emerald-400"></i>Google Flow</span><i class="fa-solid fa-chevron-down text-[10px] chevron ashzo-text-dim"></i>
+            </button>
+            <div class="dropdown-menu rounded-xl p-1.5" role="listbox">
+              <div class="dropdown-item is-selected" role="option" data-value="https://flow.google.com/" data-icon="fa-solid fa-video text-emerald-400" data-label="Google Flow"><span><i class="fa-solid fa-video mr-1.5 text-emerald-400"></i>Google Flow</span><span class="text-[9px] ashzo-text-dim">flow.google.com</span></div>
+              <div class="dropdown-item" role="option" data-value="https://accounts.google.com/" data-icon="fa-brands fa-google text-indigo-400" data-label="Google"><span><i class="fa-brands fa-google mr-1.5 text-indigo-400"></i>Google</span><span class="text-[9px] ashzo-text-dim">accounts.google.com</span></div>
+              <div class="dropdown-item" role="option" data-value="https://github.com/login" data-icon="fa-brands fa-github" data-label="GitHub"><span><i class="fa-brands fa-github mr-1.5"></i>GitHub</span><span class="text-[9px] ashzo-text-dim">github.com</span></div>
+              <div class="dropdown-item" role="option" data-value="https://x.com/i/flow/login" data-icon="fa-brands fa-x-twitter" data-label="X"><span><i class="fa-brands fa-x-twitter mr-1.5"></i>X</span><span class="text-[9px] ashzo-text-dim">x.com</span></div>
+              <div class="dropdown-item" role="option" data-value="custom" data-icon="fa-solid fa-globe text-sky-400" data-label="Custom URL"><span><i class="fa-solid fa-globe mr-1.5 text-sky-400"></i>Custom URL</span><span class="text-[9px] ashzo-text-dim">Any site</span></div>
+            </div>
+          </div>
+        </div>
+        <div id="customUrlDiv" class="hidden">
+          <label class="field-label" for="loginCustomUrl">Website address</label>
+          <input id="loginCustomUrl" type="url" placeholder="https://example.com/login" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
+        </div>
+        <div>
+          <label class="field-label" for="loginEmailInput">Account email <span class="normal-case tracking-normal">· optional</span></label>
+          <input id="loginEmailInput" type="email" placeholder="you@gmail.com" class="mt-1 w-full ashzo-input rounded-xl px-3 py-2 text-xs font-mono">
+        </div>
+        <p class="text-[10.5px] ashzo-text-dim">A Chrome window opens. Sign in there; this dialog follows along by itself.</p>
+      </div>
+
+      <!-- Step 2: live progress -->
+      <div id="loginProgress" class="hidden space-y-3">
+        <ol class="login-steps">
+          <li data-step="opening"><span class="step-icon"></span><span>Opening the Ashzo Browser</span></li>
+          <li data-step="waiting"><span class="step-icon"></span><span>Sign in on the Chrome window</span></li>
+          <li data-step="saving"><span class="step-icon"></span><span>Saving your session</span></li>
+        </ol>
+        <div id="loginMessage" class="p-3 rounded-lg ashzo-card-sub border ashzo-border text-[11px] font-mono"></div>
+        <div class="flex items-center justify-between text-[10px] font-mono ashzo-text-dim">
+          <span id="loginCountdown"></span>
+          <button type="button" onclick="showBrowserWindow()" class="hover:text-indigo-400 flex items-center gap-1"><i class="fa-solid fa-up-right-from-square text-[9px]"></i>Bring the window to front</button>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t ashzo-border">
+        <button type="button" id="loginCancelBtn" onclick="cancelLogin()" class="text-xs ashzo-text-dim px-3.5 py-1.5 rounded-lg active:scale-95 transition">Cancel</button>
+        <button type="button" id="launchLoginBtn" onclick="startLogin()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:opacity-60 text-white font-medium text-xs px-4 py-1.5 rounded-xl transition flex items-center gap-2">
+          <span>Open sign-in</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

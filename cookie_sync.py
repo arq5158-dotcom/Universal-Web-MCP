@@ -209,10 +209,28 @@ class ChromeProfileManager:
         self.save_stored_cookies()
 
     def get_cookie_header(self, domain: Optional[str] = None) -> str:
-        """Formats the cached cookies into a standard HTTP 'Cookie: a=1; b=2' string."""
-        if not self.cached_cookies:
+        """Cookie header for ONE host: only cookies that belong to that host are sent.
+
+        Cookies are read from the active session's storage state (which records each
+        cookie's domain). Without a host, nothing is sent: sending every saved cookie
+        to any URL would leak your Google session to third-party sites.
+        """
+        if not domain:
             return ""
-        return "; ".join(f"{k}={v}" for k, v in self.cached_cookies.items())
+        host = domain.split(":")[0].lower()
+        pairs = []
+        state_file = Path(self.storage_path).parent / "flow_auth_state.json"
+        if state_file.exists():
+            try:
+                with open(state_file, "r", encoding="utf-8") as f:
+                    state = json.load(f)
+                for c in state.get("cookies", []):
+                    d = (c.get("domain") or "").lstrip(".").lower()
+                    if d and (host == d or host.endswith("." + d)):
+                        pairs.append(f"{c.get('name')}={c.get('value')}")
+            except Exception as e:
+                logger.debug(f"Could not read storage state for cookie header: {e}")
+        return "; ".join(pairs)
 
     def get_cookies_dict(self) -> Dict[str, str]:
         """Returns the dictionary of currently cached cookies."""

@@ -3,6 +3,8 @@
 Compiled automatically by **Universal-Web-MCP Autonomous Explorer**.
 This document serves as the operational handbook for any AI model or user automating **flow.google.com**.
 
+> **Before automating Flow, read [GOOGLE_FLOW_SKILL.md](../GOOGLE_FLOW_SKILL.md) (sections 0 and 0.5 are mandatory).** Generate with the `flow_generate_video` tool so the user watches it live in the dashboard, and follow [VIDEO_RECREATION_SKILL.md](../VIDEO_RECREATION_SKILL.md) whenever a video is being recreated. This file is an automatic snapshot of the page and can be out of date.
+
 ---
 
 ## 📌 Executive Overview

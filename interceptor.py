@@ -58,6 +58,7 @@ class LearnedRoute(BaseModel):
     sample_response: Any = None
     discovered_at: str = ""
     status_code: int = 200
+    page_url: str = ""  # the page this API was seen on (opened to renew the session when needed)
 
 
 def is_noise_url(url: str) -> bool:
@@ -245,7 +246,8 @@ class NetworkInterceptor:
                         response_schema=schema,
                         sample_response=summary,
                         discovered_at=asyncio.get_event_loop().time().__str__(),
-                        status_code=response.status
+                        status_code=response.status,
+                        page_url=url,
                     )
                     captured_routes.append(route)
                     logger.info(f"Captured clean API route: {route.method} {route.url}")

@@ -1,0 +1,12 @@
+{
+  "name": "ashzo-mcp-dashboard",
+  "private": true,
+  "description": "Builds the dashboard's CSS (web/vendor/tailwind.css). Only needed if you change classes in web/.",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i web/tailwind.input.css -o web/vendor/tailwind.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i web/tailwind.input.css -o web/vendor/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
