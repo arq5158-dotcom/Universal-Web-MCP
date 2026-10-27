@@ -18,6 +18,7 @@ learned_routes.json
 .ashzo_browser/
 ashzo_settings.json
 downloads/
+inbox/
 logs/
 scripts/_out/
 *.sqlite

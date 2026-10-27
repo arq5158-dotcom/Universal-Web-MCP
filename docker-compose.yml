@@ -15,6 +15,7 @@ services:
       - "127.0.0.1:6080:6080"
     volumes:
       - ashzo-data:/data
+      - ./inbox:/inbox  # drop images here; tell Claude the file name (the container can't see your other folders)
     shm_size: "1gb"  # Chromium needs more shared memory than Docker's 64 MB default
     environment:
       # Optional: set a password for the noVNC view (put VNC_PASSWORD=... in a .env file next to this file).

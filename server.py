@@ -610,8 +610,14 @@ def _stage_reference(path: Optional[str]) -> Optional[str]:
         return None
     import shutil
     src = Path(path).expanduser()
+    inbox = os.environ.get("ASHZO_INBOX")  # Docker: the computer's own folders are not visible, only the shared inbox folder
+    if not src.exists() and inbox:
+        shared = Path(inbox) / Path(path.replace("\\", "/")).name
+        if shared.exists():
+            src = shared
     if not src.exists():
-        raise FileNotFoundError(f"Reference image not found: {src}")
+        hint = " In Docker, copy the image into the 'inbox' folder next to docker-compose.yml and pass its file name." if inbox else ""
+        raise FileNotFoundError(f"Reference image not found: {src}.{hint}")
     ref_dir = BASE_DIR / "downloads" / "references"
     ref_dir.mkdir(parents=True, exist_ok=True)
     dst = ref_dir / f"{int(time.time())}_{src.name}"
